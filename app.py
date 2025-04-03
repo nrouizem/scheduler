@@ -5,7 +5,7 @@ import googleapiclient.discovery
 import os
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("FLASK_SECRET_KEY", "replace_with_a_secret_key")
+app.secret_key = os.environ.get("FLASK_SECRET_KEY")
 
 # Path to your OAuth 2.0 credentials file downloaded from Google Cloud Console.
 CLIENT_SECRETS_FILE = "credentials.json"
