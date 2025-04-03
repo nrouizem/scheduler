@@ -1,4 +1,4 @@
-ortools-python
+ortools
 requests
 flask
 google-api-python-client
