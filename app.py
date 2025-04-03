@@ -1,8 +1,26 @@
+import os
+import json
+
+def write_credentials_file():
+    google_creds = os.environ.get('GOOGLE_CREDENTIALS')
+    if google_creds is None:
+        raise Exception("GOOGLE_CREDENTIALS environment variable is not set")
+    try:
+        creds_data = json.loads(google_creds)
+    except json.JSONDecodeError as e:
+        raise Exception("Invalid JSON in GOOGLE_CREDENTIALS environment variable") from e
+    # Write the JSON data to a file named 'credentials.json'
+    with open('credentials.json', 'w') as f:
+        json.dump(creds_data, f, indent=4)
+    print("credentials.json file created successfully.")
+
+# Call the function immediately when the app starts.
+write_credentials_file()
+
 from flask import Flask, redirect, url_for, session, request, render_template, flash
 from google_auth_oauthlib.flow import Flow
 import google.oauth2.credentials
 import googleapiclient.discovery
-import os
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY")
