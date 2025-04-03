@@ -216,7 +216,7 @@ def random_schedule(items, timeslots):
     
     best_score = 0
     best_schedule = {}
-    for _ in trange(1000000):
+    for _ in trange(10000):
         this_score = 0
         schedule = {}
         flag = 0

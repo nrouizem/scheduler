@@ -17,10 +17,12 @@ def write_credentials_file():
 # Call the function immediately when the app starts.
 write_credentials_file()
 
-from flask import Flask, redirect, url_for, session, request, render_template, flash
+from flask import Flask, redirect, url_for, session, request, render_template, flash, jsonify
+from dataclasses import asdict
 from google_auth_oauthlib.flow import Flow
 import google.oauth2.credentials
 import googleapiclient.discovery
+from functions import *
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY")
@@ -102,8 +104,8 @@ def add_event():
         # Create the event object.
         event = {
             'summary': summary,
-            'start': {'dateTime': start_time, 'timeZone': 'America/Los_Angeles'},
-            'end': {'dateTime': end_time, 'timeZone': 'America/Los_Angeles'},
+            'start': {'dateTime': start_time, 'timeZone': 'America/Chicago'},
+            'end': {'dateTime': end_time, 'timeZone': 'America/Chicago'},
         }
         credentials = google.oauth2.credentials.Credentials(**session['credentials'])
         service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials)
@@ -111,6 +113,29 @@ def add_event():
         flash("Event added successfully!")
         return redirect(url_for('dashboard'))
     return render_template("add_event.html")
+
+@app.route('/api/events', methods=['GET'])
+def get_events():
+    # Ensure the user is authenticated
+    if 'credentials' not in session:
+        return jsonify({'error': 'User not authenticated'}), 401
+
+    # Build the Google Calendar service using stored credentials
+    credentials = google.oauth2.credentials.Credentials(**session['credentials'])
+    service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials)
+    
+    # Retrieve events (adjust maxResults or add parameters as needed)
+    events_result = service.events().list(calendarId='primary', maxResults=20).execute()
+    gcal_events = events_result.get('items', [])
+    
+    # Convert each Google Calendar event to your internal Event format
+    scheduling_events = [convert_gcal_event(event) for event in gcal_events]
+    
+    # Convert dataclass objects to dictionaries for JSON serialization
+    events_as_dicts = [asdict(e) for e in scheduling_events]
+    
+    # Return the JSON response to the frontend
+    return jsonify(events_as_dicts)
 
 if __name__ == "__main__":
     # For local testing
