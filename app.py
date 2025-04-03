@@ -7,9 +7,6 @@ import os
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "replace_with_a_secret_key")
 
-# Only for local development. Remove this line when deploying with HTTPS in production.
-os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
-
 # Path to your OAuth 2.0 credentials file downloaded from Google Cloud Console.
 CLIENT_SECRETS_FILE = "credentials.json"
 
