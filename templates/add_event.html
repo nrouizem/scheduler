@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Add New Event</title>
+  </head>
+  <body>
+    <h1>Add a New Event</h1>
+    <form method="post" action="{{ url_for('add_event') }}">
+      <label for="summary">Event Title:</label>
+      <input type="text" id="summary" name="summary" required><br><br>
+      
+      <label for="start_time">Start Time (ISO format):</label>
+      <input type="text" id="start_time" name="start_time" placeholder="2025-04-10T09:00:00-07:00" required><br><br>
+      
+      <label for="end_time">End Time (ISO format):</label>
+      <input type="text" id="end_time" name="end_time" placeholder="2025-04-10T10:00:00-07:00" required><br><br>
+      
+      <input type="submit" value="Add Event">
+    </form>
+    <br>
+    <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+  </body>
+</html>

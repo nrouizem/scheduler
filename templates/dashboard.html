@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Your Calendar Dashboard</title>
+  </head>
+  <body>
+    <h1>Dashboard</h1>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul>
+          {% for message in messages %}
+            <li>{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+    <h2>Your Upcoming Events:</h2>
+    <ul>
+      {% for event in events %}
+        <li>{{ event.summary }} - {{ event.start.dateTime or event.start.date }}</li>
+      {% endfor %}
+    </ul>
+    <a href="{{ url_for('add_event') }}">Add a New Event</a>
+    <br>
+    <a href="{{ url_for('index') }}">Home</a>
+  </body>
+</html>
