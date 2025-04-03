@@ -329,3 +329,37 @@ def schedule(items, timeslots):
         return or_tools_schedule
     
     return random_schedule(items, timeslots)
+
+def convert_gcal_event(gcal_event: dict) -> Event:
+    # Extract event name (use a default if not provided)
+    name = gcal_event.get('summary', 'Untitled Event')
+    
+    # Get start and end times. Use 'dateTime' if available; otherwise 'date' (for all-day events)
+    start_str = gcal_event.get('start', {}).get('dateTime') or gcal_event.get('start', {}).get('date')
+    end_str = gcal_event.get('end', {}).get('dateTime') or gcal_event.get('end', {}).get('date')
+    
+    # Parse the datetime strings. If it's an all-day event (date only), assume midnight.
+    try:
+        start_dt = datetime.datetime.fromisoformat(start_str)
+    except Exception:
+        start_dt = datetime.datetime.strptime(start_str, "%Y-%m-%d")
+    
+    try:
+        end_dt = datetime.datetime.fromisoformat(end_str)
+    except Exception:
+        end_dt = datetime.datetime.strptime(end_str, "%Y-%m-%d")
+    
+    # Set default values for fields not provided by Google Calendar.
+    # You might adjust these defaults or enhance the conversion based on your app's needs.
+    required_focus = 0.5   # Default focus level
+    category = 'meeting'   # Default category; you could infer this from event details if needed.
+    flexibility = 0.0      # Assume events from the calendar are fixed by default.
+    
+    return Event(
+        name=name,
+        start=start_dt,
+        end=end_dt,
+        required_focus=required_focus,
+        category=category,
+        flexibility=flexibility
+    )
