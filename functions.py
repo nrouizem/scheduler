@@ -216,10 +216,10 @@ def greedy_schedule(items, timeslots):
 
 # randomly assign timeslots (really dumb)
 def random_schedule(items, timeslots):
-    greedy_attempt = greedy_schedule(items, timeslots)
-    if greedy_attempt:
-        print("Processed with greedy schedule")
-        return greedy_attempt
+    #greedy_attempt = greedy_schedule(items, timeslots)
+    #if greedy_attempt:
+    #    print("Processed with greedy schedule")
+    #    return greedy_attempt
     
     print("Processed with random schedule generator")
     best_score = 0
