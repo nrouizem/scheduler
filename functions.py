@@ -161,6 +161,8 @@ def score_time(item, timeslot):
     if item.start == timeslot.start:
         return 1
     
+    return 0
+    
     delta = item.start - timeslot.start
     delta = np.abs(delta.total_seconds())/60    # in minutes
     
