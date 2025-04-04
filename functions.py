@@ -341,8 +341,10 @@ def schedule(items):
 
     or_tools_schedule = schedule_with_ortools(items, timeslots)
     if or_tools_schedule[0]:
+        print("Processed with or_tools")
         return or_tools_schedule
     
+    print("Processed with random schedule generator")
     return random_schedule(items, timeslots)
 
 def convert_gcal_event(gcal_event: dict) -> Event:

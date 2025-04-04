@@ -10,6 +10,9 @@
         <li>
           <strong>{{ item.name }}</strong><br>
           {{ item.calculated_start.strftime('%H:%M') }} - {{ item.calculated_end.strftime('%H:%M') }}<br>
+          Category: {{ event.category }}<br>
+          Focus: {{ event.required_focus }}<br>
+          Flexibility: {{ event.flexibility }}
         </li>
       {% endfor %}
     </ul>
