@@ -144,6 +144,19 @@ def process_schedule():
     # Render a new page to display the optimal schedule.
     return render_template("optimal_schedule.html", schedule=optimal_schedule)
 
+@app.template_filter('datetimeformat')
+def datetimeformat(value, format='%A %I:%M %p'):
+    """
+    Convert an ISO datetime string to a nicer format.
+    Default format: 'Monday 08:00 AM'
+    """
+    try:
+        dt = datetime.fromisoformat(value)
+    except ValueError:
+        # If conversion fails, return the original value
+        return value
+    return dt.strftime(format)
+
 if __name__ == "__main__":
     # For local testing
     app.run(debug=True)

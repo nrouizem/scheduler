@@ -9,11 +9,7 @@
       {% for item in schedule %}
         <li>
           <strong>{{ item.name }}</strong><br>
-          From: {{ item.calculated_start.strftime('%H:%M') }}<br>
-          To: {{ item.calculated_end.strftime('%H:%M') }}<br>
-          Category: {{ item.category }}<br>
-          Focus: {{ item.required_focus }}<br>
-          Flexibility: {{ item.flexibility }}
+          {{ item.calculated_start.strftime('%H:%M') }} - {{ item.calculated_end.strftime('%H:%M') }}<br>
         </li>
       {% endfor %}
     </ul>
