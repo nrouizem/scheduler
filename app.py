@@ -104,8 +104,6 @@ def dashboard():
     time_max = (specific_day + datetime.timedelta(days=1)).isoformat()
 
     # Retrieve events within that time window
-    credentials = google.oauth2.credentials.Credentials(**session['credentials'])
-    service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials)
     today_events_result = service.events().list(
         calendarId='primary',
         timeMin=time_min,
@@ -115,17 +113,9 @@ def dashboard():
     ).execute()
     today_events = today_events_result.get('items', [])
 
-    # not today's events
-    tz = pytz.timezone("America/Chicago")
-
-    # Define the specific day (e.g., today) and make it timezone-aware
-    specific_day = tz.localize(datetime.datetime.today().replace(hour=0, minute=0, second=0, microsecond=0))
-
     time_min = (specific_day + datetime.timedelta(days=1)).isoformat()
 
     # Retrieve events within that time window
-    credentials = google.oauth2.credentials.Credentials(**session['credentials'])
-    service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials)
     not_today_events_result = service.events().list(
         calendarId='primary',
         timeMin=time_min,
@@ -229,7 +219,7 @@ def datetimeformat(value):
     else:
         day_str = dt.strftime('%A')  # e.g., "Monday"
 
-    time_str = dt.strftime('%I:%M %p')
+    time_str = dt.strftime('%I:%M %p').lstrip('0')
     return f"{day_str} {time_str}"
 
 if __name__ == "__main__":
