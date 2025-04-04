@@ -204,7 +204,7 @@ def process_schedule():
     }
     
     # Render a new page to display the optimal schedule.
-    return render_template("optimal_schedule.html", schedules=schedules)
+    return render_template("schedules.html", schedules=schedules)
 
 @app.template_filter('datetimeformat')
 def datetimeformat(value):
