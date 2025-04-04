@@ -1,6 +1,6 @@
 import os
 import json
-from datetime import datetime
+import datetime
 
 def write_credentials_file():
     google_creds = os.environ.get('GOOGLE_CREDENTIALS')
@@ -104,8 +104,8 @@ def add_event():
         end_time_raw = request.form.get("end_time")      # e.g., "2025-04-10T10:00"
 
         # Convert the raw strings to datetime objects
-        start_dt = datetime.fromisoformat(start_time_raw)
-        end_dt = datetime.fromisoformat(end_time_raw)
+        start_dt = datetime.datetime.fromisoformat(start_time_raw)
+        end_dt = datetime.datetime.fromisoformat(end_time_raw)
 
         # Format datetime to include seconds (RFC3339-compliant, without timezone offset)
         start_time_formatted = start_dt.strftime("%Y-%m-%dT%H:%M:%S")
