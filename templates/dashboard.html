@@ -21,6 +21,13 @@
         </li>
       {% endfor %}
     </ul>
+    <h2>Looking Ahead:</h2>
+    <ul>
+      {% for event in not_today_events %}
+        <li>{{ event.summary }} - {{ (event.start.dateTime or event.start.date) | datetimeformat }}
+        </li>
+      {% endfor %}
+    </ul>
     <a href="{{ url_for('add_event') }}">Add a New Event</a>
     <br>
     <!-- New button/link to process and view the optimal schedule -->

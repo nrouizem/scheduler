@@ -115,9 +115,28 @@ def dashboard():
     ).execute()
     today_events = today_events_result.get('items', [])
 
+    # not today's events
+    tz = pytz.timezone("America/Chicago")
+
+    # Define the specific day (e.g., today) and make it timezone-aware
+    specific_day = tz.localize(datetime.datetime.today().replace(hour=0, minute=0, second=0, microsecond=0))
+
+    time_min = (specific_day + datetime.timedelta(days=1)).isoformat()
+
+    # Retrieve events within that time window
+    credentials = google.oauth2.credentials.Credentials(**session['credentials'])
+    service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials)
+    not_today_events_result = service.events().list(
+        calendarId='primary',
+        timeMin=time_min,
+        singleEvents=True,  # expands recurring events into individual events
+        orderBy='startTime'
+    ).execute()
+    not_today_events = not_today_events_result.get('items', [])
+
     # Update the session credentials (in case they were refreshed).
     session['credentials'] = credentials_to_dict(credentials)
-    return render_template("dashboard.html", events=events, today_events=today_events)
+    return render_template("dashboard.html", events=events, today_events=today_events, not_today_events=not_today_events)
 
 @app.route("/add_event", methods=["GET", "POST"])
 def add_event():
