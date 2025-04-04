@@ -114,8 +114,8 @@ def add_event():
         # Create the event object.
         event = {
             'summary': summary,
-            'start': {'dateTime': start_time_formatted, 'timeZone': 'America/Los_Angeles'},
-            'end': {'dateTime': end_time_formatted, 'timeZone': 'America/Los_Angeles'},
+            'start': {'dateTime': start_time_formatted, 'timeZone': 'America/Chicago'},
+            'end': {'dateTime': end_time_formatted, 'timeZone': 'America/Chicago'},
         }
 
         credentials = google.oauth2.credentials.Credentials(**session['credentials'])
