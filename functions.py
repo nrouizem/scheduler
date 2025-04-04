@@ -1,5 +1,6 @@
 import numpy as np
 import datetime
+import zoneinfo
 from dataclasses import dataclass, field
 from typing import List, Optional, Callable, Tuple, Dict
 import random
@@ -324,8 +325,9 @@ def schedule_with_ortools(items, timeslots):
         return None, None
     
 def schedule(items):
-    day_start = datetime.datetime.today().replace(hour=8, minute=0, second=0, microsecond=0)
-    day_end = datetime.datetime.today().replace(hour=18, minute=0, second=0, microsecond=0)
+    today = datetime.datetime.now(zoneinfo.ZoneInfo("America/Chicago"))
+    day_start = today.replace(hour=8, minute=0, second=0, microsecond=0, )
+    day_end = today.replace(hour=18, minute=0, second=0, microsecond=0)
     slot_duration = 15  # minutes
     timeslots = generate_timeslots(day_start, day_end, slot_duration, get_focus_level, get_weather)
     or_tools_schedule = schedule_with_ortools(items, timeslots)
