@@ -323,7 +323,11 @@ def schedule_with_ortools(items, timeslots):
     else:
         return None, None
     
-def schedule(items, timeslots):
+def schedule(items):
+    day_start = datetime.datetime.today().replace(hour=8, minute=0, second=0, microsecond=0)
+    day_end = datetime.datetime.today().replace(hour=18, minute=0, second=0, microsecond=0)
+    slot_duration = 15  # minutes
+    timeslots = generate_timeslots(day_start, day_end, slot_duration, get_focus_level, get_weather)
     or_tools_schedule = schedule_with_ortools(items, timeslots)
     if or_tools_schedule[0]:
         return or_tools_schedule
