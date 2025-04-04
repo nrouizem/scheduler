@@ -187,7 +187,7 @@ def score(item, timeslot):
 # first just try to put each item in its best timeslot, see if it works
 def greedy_schedule(items, timeslots):
     timeslots_used = []
-    schedule = {}
+    schedule = []
     t_score = 0
     for item in items:
         best_timeslots = []
@@ -204,9 +204,11 @@ def greedy_schedule(items, timeslots):
             if timeslot in timeslots_used:
                 return None
         timeslots_used.extend(best_timeslots)
-        schedule[item.name] = timeslots[best_timeslots[0]].start.strftime('%H:%M')
+        item.calculated_start = timeslots[best_timeslots[0]].start
+        item.calculated_end = timeslots[best_timeslots[0]].start + datetime.timedelta(minutes=item.duration())
+        schedule.append(item)
         t_score += best_score
-    print(t_score)
+        
     return schedule
 
 # randomly assign timeslots (really dumb)
@@ -216,10 +218,10 @@ def random_schedule(items, timeslots):
         return greedy_attempt
     
     best_score = 0
-    best_schedule = {}
-    for _ in trange(10000):
+    best_schedule = []
+    for _ in trange(100000):
         this_score = 0
-        schedule = {}
+        schedule = []
         flag = 0
         timeslots_used_idx = []
         random.shuffle(items)
@@ -236,12 +238,15 @@ def random_schedule(items, timeslots):
 
             timeslots_used_idx.extend(new_timeslots)
             this_score += score(item, timeslots[i])
-            schedule[item.name] = (timeslots[i].start.strftime('%H:%M'))
+            item.calculated_start = timeslots[i].start
+            item.calculated_end = item.calculated_start + datetime.timedelta(minutes=item.duration())
+            schedule.append(item)
         
         if this_score > best_score:
             best_schedule = schedule.copy()
             best_score = this_score
     
+
     return best_schedule, best_score
 
 def schedule_with_ortools(items, timeslots):
@@ -314,22 +319,24 @@ def schedule_with_ortools(items, timeslots):
     status = solver.Solve(model)
     
     if status in [cp_model.OPTIMAL, cp_model.FEASIBLE]:
-        best_schedule = {}
+        best_schedule = []
         best_score = solver.ObjectiveValue()
         for i, item in enumerate(items):
             start_index = solver.Value(start_vars[i])
-            scheduled_time = timeslots[start_index].start.strftime('%H:%M')
-            best_schedule[item.name] = scheduled_time
+            item.calculated_start = timeslots[start_index].start
+            item.calculated_end = item.calculated_start + datetime.timedelta(minutes=item.duration())
+            best_schedule.append(item)
         return best_schedule, best_score/100_000
     else:
         return None, None
     
 def schedule(items):
     today = datetime.datetime.now(zoneinfo.ZoneInfo("America/Chicago"))
-    day_start = today.replace(hour=8, minute=0, second=0, microsecond=0, )
+    day_start = today.replace(hour=8, minute=0, second=0, microsecond=0)
     day_end = today.replace(hour=18, minute=0, second=0, microsecond=0)
     slot_duration = 15  # minutes
     timeslots = generate_timeslots(day_start, day_end, slot_duration, get_focus_level, get_weather)
+
     or_tools_schedule = schedule_with_ortools(items, timeslots)
     if or_tools_schedule[0]:
         return or_tools_schedule
