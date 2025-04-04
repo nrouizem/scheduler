@@ -245,7 +245,7 @@ def random_schedule(items, timeslots):
             item.calculated_end = item.calculated_start + datetime.timedelta(minutes=item.duration())
             schedule.append(item)
         
-        if this_score > best_score:
+        if this_score > best_score and flag == 0:
             best_schedule = schedule.copy()
             best_score = this_score
     
