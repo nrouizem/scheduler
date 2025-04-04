@@ -1,6 +1,7 @@
 import os
 import json
 import datetime
+import pytz
 
 def write_credentials_file():
     google_creds = os.environ.get('GOOGLE_CREDENTIALS')
@@ -129,12 +130,28 @@ def add_event():
 def process_schedule():
     if 'credentials' not in session:
         return redirect(url_for('index'))
-    # Retrieve events from Google Calendar.
+    
+    tz = pytz.timezone("America/Chicago")
+
+    # Define the specific day (e.g., today) and make it timezone-aware
+    specific_day = tz.localize(datetime.datetime.today().replace(hour=0, minute=0, second=0, microsecond=0))
+
+    # Calculate the start and end of the day
+    time_min = specific_day.isoformat()
+    time_max = (specific_day + datetime.timedelta(days=1)).isoformat()
+
+    # Retrieve events within that time window
     credentials = google.oauth2.credentials.Credentials(**session['credentials'])
     service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials)
-    events_result = service.events().list(calendarId='primary', maxResults=20).execute()
+    events_result = service.events().list(
+        calendarId='primary',
+        timeMin=time_min,
+        timeMax=time_max,
+        singleEvents=True,  # expands recurring events into individual events
+        orderBy='startTime'
+    ).execute()
     gcal_events = events_result.get('items', [])
-    
+        
     # Convert Google Calendar events to internal Event objects.
     internal_events = [convert_gcal_event(event) for event in gcal_events]
     
