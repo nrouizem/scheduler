@@ -85,14 +85,39 @@ def oauth2callback():
 def dashboard():
     if 'credentials' not in session:
         return redirect(url_for('index'))
+    
+    # all events
     # Use stored credentials to build the Google Calendar service.
     credentials = google.oauth2.credentials.Credentials(**session['credentials'])
     service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials)
     events_result = service.events().list(calendarId='primary', maxResults=10).execute()
     events = events_result.get('items', [])
+
+    # today's events
+    tz = pytz.timezone("America/Chicago")
+
+    # Define the specific day (e.g., today) and make it timezone-aware
+    specific_day = tz.localize(datetime.datetime.today().replace(hour=0, minute=0, second=0, microsecond=0))
+
+    # Calculate the start and end of the day
+    time_min = specific_day.isoformat()
+    time_max = (specific_day + datetime.timedelta(days=1)).isoformat()
+
+    # Retrieve events within that time window
+    credentials = google.oauth2.credentials.Credentials(**session['credentials'])
+    service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials)
+    today_events_result = service.events().list(
+        calendarId='primary',
+        timeMin=time_min,
+        timeMax=time_max,
+        singleEvents=True,  # expands recurring events into individual events
+        orderBy='startTime'
+    ).execute()
+    today_events = today_events_result.get('items', [])
+
     # Update the session credentials (in case they were refreshed).
     session['credentials'] = credentials_to_dict(credentials)
-    return render_template("dashboard.html", events=events)
+    return render_template("dashboard.html", events=events, today_events=today_events)
 
 @app.route("/add_event", methods=["GET", "POST"])
 def add_event():
@@ -168,7 +193,7 @@ def datetimeformat(value, format='%A %I:%M %p'):
     Default format: 'Monday 08:00 AM'
     """
     try:
-        dt = datetime.fromisoformat(value)
+        dt = datetime.datetime.fromisoformat(value)
     except ValueError:
         # If conversion fails, return the original value
         return value

@@ -14,9 +14,9 @@
         </ul>
       {% endif %}
     {% endwith %}
-    <h2>Your Upcoming Events:</h2>
+    <h2>Today's Schedule:</h2>
     <ul>
-      {% for event in events %}
+      {% for event in today_events %}
         <li>{{ event.summary }} - {{ event.start.dateTime or event.start.date | datetimeformat }}</li>
       {% endfor %}
     </ul>

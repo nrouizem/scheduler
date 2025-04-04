@@ -208,7 +208,8 @@ def greedy_schedule(items, timeslots):
         item.calculated_end = timeslots[best_timeslots[0]].start + datetime.timedelta(minutes=item.duration())
         schedule.append(item)
         t_score += best_score
-        
+    
+    schedule.sort(key=lambda task: task.calculated_start)
     return schedule
 
 # randomly assign timeslots (really dumb)
@@ -246,7 +247,7 @@ def random_schedule(items, timeslots):
             best_schedule = schedule.copy()
             best_score = this_score
     
-
+    best_schedule.sort(key=lambda task: task.calculated_start)
     return best_schedule, best_score
 
 def schedule_with_ortools(items, timeslots):
@@ -326,6 +327,7 @@ def schedule_with_ortools(items, timeslots):
             item.calculated_start = timeslots[start_index].start
             item.calculated_end = item.calculated_start + datetime.timedelta(minutes=item.duration())
             best_schedule.append(item)
+        best_schedule.sort(key=lambda task: task.calculated_start)
         return best_schedule, best_score/100_000
     else:
         return None, None
