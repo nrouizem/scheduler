@@ -192,6 +192,7 @@ def datetimeformat(value, format='%A %I:%M %p'):
     Convert an ISO datetime string to a nicer format.
     Default format: 'Monday 08:00 AM'
     """
+    print("HELLO")
     try:
         dt = datetime.datetime.fromisoformat(value)
     except ValueError:
