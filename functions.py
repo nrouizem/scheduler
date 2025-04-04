@@ -216,8 +216,10 @@ def greedy_schedule(items, timeslots):
 def random_schedule(items, timeslots):
     greedy_attempt = greedy_schedule(items, timeslots)
     if greedy_attempt:
+        print("Processed with greedy schedule")
         return greedy_attempt
     
+    print("Processed with random schedule generator")
     best_score = 0
     best_schedule = []
     for _ in range(10000):
@@ -262,6 +264,7 @@ def schedule_with_ortools(items, timeslots):
       best_schedule: dictionary mapping item names to the scheduled start time (as string)
       best_score: the objective value.
     """
+    print("Processed with or_tools")
     model = cp_model.CpModel()
     n_items = len(items)
     n_slots = len(timeslots)
@@ -335,10 +338,8 @@ def schedule_with_ortools(items, timeslots):
 def schedule(items, timeslots):
     or_tools_schedule = schedule_with_ortools(items, timeslots)
     if or_tools_schedule[0]:
-        print("Processed with or_tools")
         return or_tools_schedule
     
-    print("Processed with random schedule generator")
     return random_schedule(items, timeslots)
 
 def convert_gcal_event(gcal_event: dict) -> Event:
