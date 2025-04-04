@@ -11,7 +11,7 @@
       <div class="mb-5">
         <h2>Schedule 1</h2>
         <ul class="list-group">
-          {% for item in schedules[0] %}
+          {% for item in schedules.ortools %}
             <li class="list-group-item">
               <strong>{{ item.name }}</strong><br>
               {{ item.calculated_start.strftime('%H:%M') }} - {{ item.calculated_end.strftime('%H:%M') }}<br>
@@ -26,7 +26,7 @@
     <div class="mb-5">
       <h2>Schedule 2</h2>
       <ul class="list-group">
-        {% for item in schedules[1] %}
+        {% for item in schedules.random1 %}
           <li class="list-group-item">
             <strong>{{ item.name }}</strong><br>
             {{ item.calculated_start.strftime('%H:%M') }} - {{ item.calculated_end.strftime('%H:%M') }}<br>
@@ -41,7 +41,7 @@
     <div class="mb-5">
       <h2>Schedule 3</h2>
       <ul class="list-group">
-        {% for item in schedules[2] %}
+        {% for item in schedules.random2 %}
           <li class="list-group-item">
             <strong>{{ item.name }}</strong><br>
             {{ item.calculated_start.strftime('%H:%M') }} - {{ item.calculated_end.strftime('%H:%M') }}<br>

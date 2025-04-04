@@ -197,7 +197,11 @@ def process_schedule():
     timeslots = generate_timeslots(day_start, day_end, slot_duration, get_focus_level, get_weather)
     
     optimal_schedule = schedule(internal_events, timeslots)[0]
-    schedules = [optimal_schedule, random_schedule(internal_events, timeslots), random_schedule(internal_events, timeslots)]
+    schedules = {
+        "ortools": optimal_schedule,
+        "random1": random_schedule(internal_events, timeslots),
+        "random2": random_schedule(internal_events, timeslots)
+    }
     
     # Render a new page to display the optimal schedule.
     return render_template("optimal_schedule.html", schedules=schedules)
