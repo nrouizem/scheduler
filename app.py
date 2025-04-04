@@ -187,19 +187,31 @@ def process_schedule():
     return render_template("optimal_schedule.html", schedule=optimal_schedule)
 
 @app.template_filter('datetimeformat')
-def datetimeformat(value, format='%A %I:%M %p'):
+def datetimeformat(value):
     """
     Convert an ISO datetime string to a nicer format.
-    Default format: 'Monday 08:00 AM'
+    If the event is today, return "Today HH:MM AM/PM".
+    If it's tomorrow, return "Tomorrow HH:MM AM/PM".
+    Otherwise, return "DayOfWeek HH:MM AM/PM" (e.g., "Monday 08:00 AM").
     """
-    print("HELLO")
     try:
         dt = datetime.datetime.fromisoformat(value)
     except ValueError:
-        # If conversion fails, return the original value
-        print(f"failed to convert: {value}")
+        # If conversion fails, return the original value.
         return value
-    return dt.strftime(format)
+
+    # Use the event's tzinfo if available, else local time.
+    now = datetime.datetime.now(dt.tzinfo) if dt.tzinfo else datetime.datetime.now()
+
+    if dt.date() == now.date():
+        day_str = ""        # just display the time if it's today
+    elif dt.date() == (now + datetime.timedelta(days=1)).date():
+        day_str = "Tomorrow"
+    else:
+        day_str = dt.strftime('%A')  # e.g., "Monday"
+
+    time_str = dt.strftime('%I:%M %p')
+    return f"{day_str} {time_str}"
 
 if __name__ == "__main__":
     # For local testing
