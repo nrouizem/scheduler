@@ -210,7 +210,7 @@ def greedy_schedule(items, timeslots):
         t_score += best_score
     
     schedule.sort(key=lambda task: task.calculated_start)
-    return schedule
+    return schedule, t_score
 
 # randomly assign timeslots (really dumb)
 def random_schedule(items, timeslots):
