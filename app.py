@@ -2,6 +2,7 @@ import os
 import json
 import datetime
 import pytz
+import copy
 
 def write_credentials_file():
     google_creds = os.environ.get('GOOGLE_CREDENTIALS')
@@ -202,11 +203,11 @@ def process_schedule():
     timeslots = generate_timeslots(day_start, day_end, slot_duration, get_focus_level, get_weather)
     print("HELLO")
     print(internal_events)
-    optimal_schedule = schedule(internal_events.copy(), timeslots)[0]
+    optimal_schedule = schedule(copy.deepcopy(internal_events), timeslots)[0]
     schedules = {
         "ortools": optimal_schedule,
-        "random1": random_schedule(internal_events.copy(), timeslots)[0],
-        "random2": random_schedule(internal_events.copy(), timeslots)[0]
+        "random1": random_schedule(copy.deepcopy(internal_events), timeslots)[0],
+        "random2": random_schedule(copy.deepcopy(internal_events), timeslots)[0]
     }
     
     # Render a new page to display the optimal schedule.
