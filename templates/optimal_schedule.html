@@ -6,14 +6,14 @@
   <body>
     <h1>Optimal Schedule for Today</h1>
     <ul>
-      {% for event in schedule %}
+      {% for item in schedule %}
         <li>
-          <strong>{{ event.name }}</strong><br>
-          From: {{ event.start.isoformat() }}<br>
-          To: {{ event.end.isoformat() }}<br>
-          Category: {{ event.category }}<br>
-          Focus: {{ event.required_focus }}<br>
-          Flexibility: {{ event.flexibility }}
+          <strong>{{ item.name }}</strong><br>
+          From: {{ item.calculated_start.strftime('%H:%M') }}<br>
+          To: {{ item.calculated_end.strftime('%H:%M') }}<br>
+          Category: {{ item.category }}<br>
+          Focus: {{ item.required_focus }}<br>
+          Flexibility: {{ item.flexibility }}
         </li>
       {% endfor %}
     </ul>
