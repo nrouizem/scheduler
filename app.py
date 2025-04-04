@@ -139,7 +139,7 @@ def process_schedule():
     internal_events = [convert_gcal_event(event) for event in gcal_events]
     
     # Call your scheduling engine; this function returns the optimal schedule.
-    optimal_schedule = schedule(internal_events)
+    optimal_schedule = schedule(internal_events)[0]
     
     # Render a new page to display the optimal schedule.
     return render_template("optimal_schedule.html", schedule=optimal_schedule)
