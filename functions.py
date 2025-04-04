@@ -161,8 +161,6 @@ def score_time(item, timeslot):
     if item.start == timeslot.start:
         return 1
     
-    return 0
-    
     delta = item.start - timeslot.start
     delta = np.abs(delta.total_seconds())/60    # in minutes
     
@@ -175,7 +173,7 @@ def score(item, timeslot):
     weights = [
         2,      # weather
         1,      # focus
-        5       # time
+        10       # time
     ]
     match_array = [
         score_weather(item, timeslot),
