@@ -125,28 +125,24 @@ def add_event():
         return redirect(url_for('dashboard'))
     return render_template("add_event.html")
 
-@app.route('/api/events', methods=['GET'])
-def get_events():
-    # Ensure the user is authenticated
+@app.route("/process_schedule")
+def process_schedule():
     if 'credentials' not in session:
-        return jsonify({'error': 'User not authenticated'}), 401
-
-    # Build the Google Calendar service using stored credentials
+        return redirect(url_for('index'))
+    # Retrieve events from Google Calendar.
     credentials = google.oauth2.credentials.Credentials(**session['credentials'])
     service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials)
-    
-    # Retrieve events (adjust maxResults or add parameters as needed)
     events_result = service.events().list(calendarId='primary', maxResults=20).execute()
     gcal_events = events_result.get('items', [])
     
-    # Convert each Google Calendar event to your internal Event format
-    scheduling_events = [convert_gcal_event(event) for event in gcal_events]
+    # Convert Google Calendar events to internal Event objects.
+    internal_events = [convert_gcal_event(event) for event in gcal_events]
     
-    # Convert dataclass objects to dictionaries for JSON serialization
-    events_as_dicts = [asdict(e) for e in scheduling_events]
+    # Call your scheduling engine; this function returns the optimal schedule.
+    optimal_schedule = schedule(internal_events)
     
-    # Return the JSON response to the frontend
-    return jsonify(events_as_dicts)
+    # Render a new page to display the optimal schedule.
+    return render_template("optimal_schedule.html", schedule=optimal_schedule)
 
 if __name__ == "__main__":
     # For local testing

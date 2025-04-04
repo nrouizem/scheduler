@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Optimal Schedule</title>
+  </head>
+  <body>
+    <h1>Optimal Schedule for Today</h1>
+    <ul>
+      {% for event in schedule %}
+        <li>
+          <strong>{{ event.name }}</strong><br>
+          From: {{ event.start.isoformat() }}<br>
+          To: {{ event.end.isoformat() }}<br>
+          Category: {{ event.category }}<br>
+          Focus: {{ event.required_focus }}<br>
+          Flexibility: {{ event.flexibility }}
+        </li>
+      {% endfor %}
+    </ul>
+    <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+  </body>
+</html>
