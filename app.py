@@ -200,6 +200,7 @@ def process_schedule():
     day_end = today.replace(hour=18, minute=0, second=0, microsecond=0)
     slot_duration = 15  # minutes
     timeslots = generate_timeslots(day_start, day_end, slot_duration, get_focus_level, get_weather)
+    print("HELLO")
     print(internal_events)
     optimal_schedule = schedule(internal_events.copy(), timeslots)[0]
     schedules = {
