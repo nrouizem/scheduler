@@ -241,7 +241,7 @@ def random_schedule(items, timeslots):
 
             timeslots_used_idx.extend(new_timeslots)
             this_score += score(item, timeslots[i])
-            item.calculated_start = timeslots[i].start + item.buffer_before
+            item.calculated_start = timeslots[i].start + datetime.timedelta(minutes=item.buffer_before)
             item.calculated_end = item.calculated_start + datetime.timedelta(minutes=item.duration())
             schedule.append(item)
         
