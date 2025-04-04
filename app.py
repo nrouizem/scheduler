@@ -1,5 +1,6 @@
 import os
 import json
+from datetime import datetime
 
 def write_credentials_file():
     google_creds = os.environ.get('GOOGLE_CREDENTIALS')
@@ -99,14 +100,24 @@ def add_event():
     if request.method == "POST":
         # Get event details from the form.
         summary = request.form.get("summary")
-        start_time = request.form.get("start_time")
-        end_time = request.form.get("end_time")
+        start_time_raw = request.form.get("start_time")  # e.g., "2025-04-10T09:00"
+        end_time_raw = request.form.get("end_time")      # e.g., "2025-04-10T10:00"
+
+        # Convert the raw strings to datetime objects
+        start_dt = datetime.fromisoformat(start_time_raw)
+        end_dt = datetime.fromisoformat(end_time_raw)
+
+        # Format datetime to include seconds (RFC3339-compliant, without timezone offset)
+        start_time_formatted = start_dt.strftime("%Y-%m-%dT%H:%M:%S")
+        end_time_formatted = end_dt.strftime("%Y-%m-%dT%H:%M:%S")
+
         # Create the event object.
         event = {
             'summary': summary,
-            'start': {'dateTime': start_time, 'timeZone': 'America/Chicago'},
-            'end': {'dateTime': end_time, 'timeZone': 'America/Chicago'},
+            'start': {'dateTime': start_time_formatted, 'timeZone': 'America/Los_Angeles'},
+            'end': {'dateTime': end_time_formatted, 'timeZone': 'America/Los_Angeles'},
         }
+
         credentials = google.oauth2.credentials.Credentials(**session['credentials'])
         service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials)
         service.events().insert(calendarId='primary', body=event).execute()
