@@ -72,8 +72,8 @@ class Task:
     required_focus: float  # e.g., 0.0 (low) to 1.0 (high)
     category: str  # e.g., 'gardening', 'writing'
     flexibility: float # e.g., 0.0 (none/fixed) to 1.0 (very flexible) but what does flexibility mean for a task?? "does it have to happen today" maybe?
-    buffer_before: int = 0 # travel/other time beforehand to take into account
-    buffer_after: int = 20 # rest/other time after to take into account
+    buffer_before: int = 15 # travel/other time beforehand to take into account
+    buffer_after: int = 15 # rest/other time after to take into account
 
     def duration_with_buffer(self) -> int:
         """Return the duration of task (buffer included) in minutes."""
@@ -87,8 +87,8 @@ class Event:
     required_focus: float  # e.g., 0.0 (low) to 1.0 (high)
     category: str  # e.g., 'gardening', 'meeting'
     flexibility: float # e.g., 0.0 (none/fixed) to 1.0 (very flexible)
-    buffer_before: int = 20 # travel/other time beforehand to take into account
-    buffer_after: int = 20 # rest/other time after to take into account
+    buffer_before: int = 15 # travel/other time beforehand to take into account
+    buffer_after: int = 15 # rest/other time after to take into account
 
     def duration(self) -> int:
         """Return the duration of the event in minutes."""
