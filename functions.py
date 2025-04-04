@@ -332,13 +332,7 @@ def schedule_with_ortools(items, timeslots):
     else:
         return None, None
     
-def schedule(items):
-    today = datetime.datetime.now(zoneinfo.ZoneInfo("America/Chicago"))
-    day_start = today.replace(hour=8, minute=0, second=0, microsecond=0)
-    day_end = today.replace(hour=18, minute=0, second=0, microsecond=0)
-    slot_duration = 15  # minutes
-    timeslots = generate_timeslots(day_start, day_end, slot_duration, get_focus_level, get_weather)
-
+def schedule(items, timeslots):
     or_tools_schedule = schedule_with_ortools(items, timeslots)
     if or_tools_schedule[0]:
         print("Processed with or_tools")

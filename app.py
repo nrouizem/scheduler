@@ -188,12 +188,19 @@ def process_schedule():
         
     # Convert Google Calendar events to internal Event objects.
     internal_events = [convert_gcal_event(event) for event in gcal_events]
+
+    # generate timeslots
+    today = datetime.datetime.now(zoneinfo.ZoneInfo("America/Chicago"))
+    day_start = today.replace(hour=8, minute=0, second=0, microsecond=0)
+    day_end = today.replace(hour=18, minute=0, second=0, microsecond=0)
+    slot_duration = 15  # minutes
+    timeslots = generate_timeslots(day_start, day_end, slot_duration, get_focus_level, get_weather)
     
-    # Call your scheduling engine; this function returns the optimal schedule.
-    optimal_schedule = schedule(internal_events)[0]
+    optimal_schedule = schedule(internal_events, timeslots)[0]
+    schedules = [optimal_schedule, random_schedule(internal_events), random_schedule(internal_events)]
     
     # Render a new page to display the optimal schedule.
-    return render_template("optimal_schedule.html", schedule=optimal_schedule)
+    return render_template("optimal_schedule.html", schedules=schedules)
 
 @app.template_filter('datetimeformat')
 def datetimeformat(value):

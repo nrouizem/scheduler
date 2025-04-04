@@ -1,21 +1,58 @@
 <!doctype html>
 <html>
   <head>
-    <title>Optimal Schedule</title>
+    <title>Optimal Schedules</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
   </head>
-  <body>
-    <h1>Optimal Schedule for Today</h1>
-    <ul>
-      {% for item in schedule %}
-        <li>
-          <strong>{{ item.name }}</strong><br>
-          {{ item.calculated_start.strftime('%H:%M') }} - {{ item.calculated_end.strftime('%H:%M') }}<br>
-          Category: {{ item.category }}<br>
-          Focus: {{ item.required_focus }}<br>
-          Flexibility: {{ item.flexibility }}
-        </li>
-      {% endfor %}
-    </ul>
-    <a href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+  <body class="container my-5">
+    <h1 class="mb-4">Optimal Schedules for Today</h1>
+    
+      <div class="mb-5">
+        <h2>Schedule 1</h2>
+        <ul class="list-group">
+          {% for item in schedules[0] %}
+            <li class="list-group-item">
+              <strong>{{ item.name }}</strong><br>
+              {{ item.calculated_start.strftime('%H:%M') }} - {{ item.calculated_end.strftime('%H:%M') }}<br>
+              Category: {{ item.category }}<br>
+              Focus: {{ item.required_focus }}<br>
+              Flexibility: {{ item.flexibility }}
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    
+    <div class="mb-5">
+      <h2>Schedule 2</h2>
+      <ul class="list-group">
+        {% for item in schedules[1] %}
+          <li class="list-group-item">
+            <strong>{{ item.name }}</strong><br>
+            {{ item.calculated_start.strftime('%H:%M') }} - {{ item.calculated_end.strftime('%H:%M') }}<br>
+            Category: {{ item.category }}<br>
+            Focus: {{ item.required_focus }}<br>
+            Flexibility: {{ item.flexibility }}
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+    
+    <div class="mb-5">
+      <h2>Schedule 3</h2>
+      <ul class="list-group">
+        {% for item in schedules[2] %}
+          <li class="list-group-item">
+            <strong>{{ item.name }}</strong><br>
+            {{ item.calculated_start.strftime('%H:%M') }} - {{ item.calculated_end.strftime('%H:%M') }}<br>
+            Category: {{ item.category }}<br>
+            Focus: {{ item.required_focus }}<br>
+            Flexibility: {{ item.flexibility }}
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+    
+    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
   </body>
 </html>
