@@ -28,6 +28,11 @@ from functions import *
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY")
+app.permanent_session_lifetime = datetime.timedelta(days=30)  # Adjust lifetime as needed
+
+@app.before_request
+def make_session_permanent():
+    session.permanent = True
 
 # Path to your OAuth 2.0 credentials file downloaded from Google Cloud Console.
 CLIENT_SECRETS_FILE = "credentials.json"

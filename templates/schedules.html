@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <title>Schedule Options</title>
+    <title>Optimal Schedules</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- Bootstrap CSS CDN -->
@@ -42,12 +42,12 @@
     </style>
   </head>
   <body class="container my-5">
-    <h1 class="mb-4 text-center">Possible Schedules for Today</h1>
+    <h1 class="mb-4 text-center">Optimal Schedules for Today</h1>
     <div class="row">
       <!-- Schedule Column 1 -->
       <div class="col-md-4">
         <h2 class="text-center">Schedule 1</h2>
-        <div class="position-relative">
+        <div class="position-relative mb-3">
           <div class="time-labels">
             {% for hr in range(7, 22) %}
               {% set pos = (hr - 7) * 60 %}
@@ -68,11 +68,27 @@
             {% endfor %}
           </div>
         </div>
+        <!-- Plain List of Events for Schedule 1 -->
+        <div>
+          <h5 class="text-center">Event List</h5>
+          <ul class="list-group">
+            {% for item in schedules.ortools %}
+              <li class="list-group-item">
+                <strong>{{ item.name }}</strong><br>
+                {{ item.calculated_start.strftime('%I:%M %p').lstrip('0') }} - 
+                {{ item.calculated_end.strftime('%I:%M %p').lstrip('0') }}<br>
+                Category: {{ item.category }}<br>
+                Focus: {{ item.required_focus }}<br>
+                Flexibility: {{ item.flexibility }}
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
       </div>
       <!-- Schedule Column 2 -->
       <div class="col-md-4">
         <h2 class="text-center">Schedule 2</h2>
-        <div class="position-relative">
+        <div class="position-relative mb-3">
           <div class="time-labels">
             {% for hr in range(7, 22) %}
               {% set pos = (hr - 7) * 60 %}
@@ -93,11 +109,27 @@
             {% endfor %}
           </div>
         </div>
+        <!-- Plain List of Events for Schedule 2 -->
+        <div>
+          <h5 class="text-center">Event List</h5>
+          <ul class="list-group">
+            {% for item in schedules.random1 %}
+              <li class="list-group-item">
+                <strong>{{ item.name }}</strong><br>
+                {{ item.calculated_start.strftime('%I:%M %p').lstrip('0') }} - 
+                {{ item.calculated_end.strftime('%I:%M %p').lstrip('0') }}<br>
+                Category: {{ item.category }}<br>
+                Focus: {{ item.required_focus }}<br>
+                Flexibility: {{ item.flexibility }}
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
       </div>
       <!-- Schedule Column 3 -->
       <div class="col-md-4">
         <h2 class="text-center">Schedule 3</h2>
-        <div class="position-relative">
+        <div class="position-relative mb-3">
           <div class="time-labels">
             {% for hr in range(7, 22) %}
               {% set pos = (hr - 7) * 60 %}
@@ -117,6 +149,22 @@
               </div>
             {% endfor %}
           </div>
+        </div>
+        <!-- Plain List of Events for Schedule 3 -->
+        <div>
+          <h5 class="text-center">Event List</h5>
+          <ul class="list-group">
+            {% for item in schedules.random2 %}
+              <li class="list-group-item">
+                <strong>{{ item.name }}</strong><br>
+                {{ item.calculated_start.strftime('%I:%M %p').lstrip('0') }} - 
+                {{ item.calculated_end.strftime('%I:%M %p').lstrip('0') }}<br>
+                Category: {{ item.category }}<br>
+                Focus: {{ item.required_focus }}<br>
+                Flexibility: {{ item.flexibility }}
+              </li>
+            {% endfor %}
+          </ul>
         </div>
       </div>
     </div>
