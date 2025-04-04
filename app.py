@@ -196,6 +196,7 @@ def datetimeformat(value, format='%A %I:%M %p'):
         dt = datetime.datetime.fromisoformat(value)
     except ValueError:
         # If conversion fails, return the original value
+        print(f"failed to convert: {value}")
         return value
     return dt.strftime(format)
 
