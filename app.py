@@ -199,8 +199,8 @@ def process_schedule():
     optimal_schedule = schedule(internal_events, timeslots)[0]
     schedules = {
         "ortools": optimal_schedule,
-        "random1": random_schedule(internal_events, timeslots),
-        "random2": random_schedule(internal_events, timeslots)
+        "random1": random_schedule(internal_events, timeslots)[0],
+        "random2": random_schedule(internal_events, timeslots)[0]
     }
     
     # Render a new page to display the optimal schedule.
