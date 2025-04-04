@@ -200,12 +200,12 @@ def process_schedule():
     day_end = today.replace(hour=18, minute=0, second=0, microsecond=0)
     slot_duration = 15  # minutes
     timeslots = generate_timeslots(day_start, day_end, slot_duration, get_focus_level, get_weather)
-    
-    optimal_schedule = schedule(internal_events, timeslots)[0]
+    print(internal_events)
+    optimal_schedule = schedule(internal_events.copy(), timeslots)[0]
     schedules = {
         "ortools": optimal_schedule,
-        "random1": random_schedule(internal_events, timeslots)[0],
-        "random2": random_schedule(internal_events, timeslots)[0]
+        "random1": random_schedule(internal_events.copy(), timeslots)[0],
+        "random2": random_schedule(internal_events.copy(), timeslots)[0]
     }
     
     # Render a new page to display the optimal schedule.
