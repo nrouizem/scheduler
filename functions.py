@@ -8,6 +8,7 @@ from ortools.sat.python import cp_model
 import math
 from ortools.sat.python import cp_model
 import os
+from dateutil.parser import isoparse
 import json
 
 # Example focus level function based on time-of-day.
@@ -62,7 +63,12 @@ def get_weather(dt: datetime.datetime) -> dict:
 
     except requests.exceptions.RequestException as e:
         print(f"Error fetching weather data: {e}")
-        return None
+        return {
+            "condition": "Unknown",
+            "feelslike_f": 70,
+            "chance_of_rain": 0,
+            "wind_mph": 5
+        }
 
 @dataclass
 class Task:
@@ -102,7 +108,7 @@ class TimeSlot:
     start: datetime.datetime
     end: datetime.datetime
     focus_level: float  # e.g., 0.0 (low) to 1.0 (high)
-    weather: str        # e.g., 'sunny', 'rainy', 'cloudy'
+    weather: dict
 
     def duration(self) -> int:
         """Return the duration of the timeslot in minutes."""
@@ -114,7 +120,7 @@ def generate_timeslots(
     day_end: datetime.datetime,
     slot_duration_minutes: int,
     focus_func: Callable[[datetime.datetime], float],
-    weather_func: Callable[[datetime.datetime], str]
+    weather_func: Callable[[datetime.datetime], dict]
 ) -> List[TimeSlot]:
     timeslots = []
     current = day_start
@@ -351,12 +357,12 @@ def convert_gcal_event(gcal_event: dict) -> Event:
     
     # Parse the datetime strings. If it's an all-day event (date only), assume midnight.
     try:
-        start_dt = datetime.datetime.fromisoformat(start_str)
+        start_dt = isoparse(start_str)
     except Exception:
         start_dt = datetime.datetime.strptime(start_str, "%Y-%m-%d")
     
     try:
-        end_dt = datetime.datetime.fromisoformat(end_str)
+        end_dt = isoparse(end_str)
     except Exception:
         end_dt = datetime.datetime.strptime(end_str, "%Y-%m-%d")
     

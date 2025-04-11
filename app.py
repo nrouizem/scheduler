@@ -1,9 +1,8 @@
 import os
 import json
 import datetime
-import pytz
 import copy
-import zoneinfo
+from zoneinfo import ZoneInfo
 from dateutil.parser import isoparse
 
 def write_credentials_file():
@@ -102,7 +101,7 @@ def dashboard():
     events = events_result.get('items', [])
 
     # today's events
-    tz = pytz.timezone("America/Chicago")
+    tz = ZoneInfo("America/Chicago")
 
     # Define the specific day (e.g., today) and make it timezone-aware
     now = datetime.datetime.now(tz)
@@ -149,8 +148,8 @@ def add_event():
         end_time_raw = request.form.get("end_time")      # e.g., "2025-04-10T10:00"
 
         # Convert the raw strings to datetime objects
-        start_dt = isoparse(start_time_raw)
-        end_dt = datetime.datetime.fromisoformat(end_time_raw)
+        start_dt = datetime.datetime.strptime(start_time_raw, "%Y-%m-%dT%H:%M").replace(tzinfo=ZoneInfo("America/Chicago"))
+        end_dt = datetime.datetime.strptime(end_time_raw, "%Y-%m-%dT%H:%M").replace(tzinfo=ZoneInfo("America/Chicago"))
 
         # Format datetime to include seconds (RFC3339-compliant, without timezone offset)
         start_time_formatted = start_dt.strftime("%Y-%m-%dT%H:%M:%S")
@@ -187,7 +186,7 @@ def process_schedule():
     if 'credentials' not in session:
         return redirect(url_for('index'))
     
-    tz = pytz.timezone("America/Chicago")
+    tz = ZoneInfo("America/Chicago")
 
     # Define the specific day (e.g., today) and make it timezone-aware
     now = datetime.datetime.now(tz)
@@ -245,7 +244,8 @@ def datetimeformat(value):
         return value
 
     # Use the event's tzinfo if available, else local time.
-    now = datetime.datetime.now(dt.tzinfo) if dt.tzinfo else datetime.datetime.now()
+    tz = ZoneInfo("America/Chicago")
+    now = datetime.datetime.now(tz)
 
     if dt.date() == now.date():
         day_str = ""        # just display the time if it's today
