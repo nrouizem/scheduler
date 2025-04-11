@@ -239,6 +239,7 @@ def score(item, timeslot):
         
         #category_bonus = category_preferences(item, timeslot)
         category_bonus = 0      # not using category bonus for now, but good to keep in mind
+        base_score += category_bonus
     
     if isinstance(item, Task) and item.flexibility > 0.5:
         # this task is very flexible, so deprioritize it slightly
@@ -254,7 +255,7 @@ def score(item, timeslot):
     penalty = 0.1 * days_ahead
     base_score -= penalty
 
-    return base_score + priority_boost + category_bonus
+    return base_score + priority_boost
 
 # ok naive implementation, we'll see how bad it is
 
@@ -354,25 +355,48 @@ def random_schedule(items, timeslots, num_schedules=2):
 
     return valid_schedules
 
-def smarter_schedule(items: List[Task], timeslots: List[TimeSlot], num_schedules: int = 2) -> List[Tuple[List[Task], float]]:
+def smarter_schedule(items, timeslots, num_schedules=2):
     schedules = []
     seen_hashes = set()
     MAX_ATTEMPTS = 500
 
+    # Separate fixed Events from flexible Tasks
+    fixed_events = [item for item in items if hasattr(item, "start") and hasattr(item, "end")]
+    tasks_only = [item for item in items if not hasattr(item, "start") or not hasattr(item, "end")]
+
+    # Mark which timeslots are blocked by fixed events
+    def block_event_slots(event, all_timeslots):
+        used_indices = set()
+        for idx, slot in enumerate(all_timeslots):
+            if not (slot.end <= event.start or slot.start >= event.end):
+                used_indices.add(idx)
+        return used_indices
+
+    reserved_indices = set()
+    for event in fixed_events:
+        reserved_indices.update(block_event_slots(event, timeslots))
+
     for _ in range(MAX_ATTEMPTS):
         scheduled = []
-        timeslot_used = set()
+        timeslot_used = set(reserved_indices)
         day_minutes = defaultdict(int)
         total_score = 0
 
-        random.shuffle(items)
-        items.sort(key=lambda x: (
+        # Always include fixed events
+        for event in fixed_events:
+            scheduled.append(copy.deepcopy(event))
+            day_minutes[event.start.date()] += int((event.end - event.start).total_seconds() / 60)
+
+        # Sort tasks by priority, flexibility, and age
+        random.shuffle(tasks_only)
+        tasks_only.sort(key=lambda x: (
             -getattr(x, "priority", 5),
             getattr(x, "flexibility", 0.5),
-            -(datetime.datetime.now(ZoneInfo("America/Chicago")).date() - getattr(x, "created_at", datetime.datetime.now(ZoneInfo("America/Chicago"))).date()).days
+            -(datetime.datetime.now(ZoneInfo("America/Chicago")).date() -
+              (getattr(x, "created_at", None) or datetime.datetime.now(ZoneInfo("America/Chicago"))).date()).days
         ))
 
-        for item in items:
+        for item in tasks_only:
             slots_per_item = math.ceil(item.duration_with_buffer() / timeslots[0].duration())
             candidate_starts = list(range(len(timeslots) - slots_per_item + 1))
             random.shuffle(candidate_starts)
@@ -384,10 +408,9 @@ def smarter_schedule(items: List[Task], timeslots: List[TimeSlot], num_schedules
                     continue
 
                 start_slot = timeslots[i]
-                end_slot = timeslots[i + slots_per_item - 1]
                 slot_day = start_slot.start.date()
                 total_minutes = day_minutes[slot_day] + item.duration()
-                if total_minutes > MAX_MINUTES_PER_DAY:
+                if total_minutes > 360:
                     continue
 
                 item_copy = copy.deepcopy(item)
@@ -408,12 +431,15 @@ def smarter_schedule(items: List[Task], timeslots: List[TimeSlot], num_schedules
         if not scheduled:
             continue
 
-        sched_hash = tuple(sorted(item.calculated_start for item in scheduled))
+        sched_hash = tuple(sorted(
+            item.calculated_start if hasattr(item, "calculated_start") else item.start
+            for item in scheduled
+        ))
         if sched_hash in seen_hashes:
             continue
         seen_hashes.add(sched_hash)
 
-        scheduled.sort(key=lambda t: t.calculated_start)
+        scheduled.sort(key=lambda t: getattr(t, 'calculated_start', getattr(t, 'start', datetime.datetime.min)))
         schedules.append((scheduled, total_score))
         if len(schedules) >= num_schedules:
             break
