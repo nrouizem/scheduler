@@ -336,8 +336,8 @@ def smarter_schedule(items: List[Task], timeslots: List[TimeSlot], num_schedules
 
         random.shuffle(items)
         items.sort(key=lambda x: (
-            -x.priority,
-            x.flexibility,
+            -getattr(x, "priority", 5),
+            getattr(x, "flexibility", 0.5),
             -(datetime.datetime.now(ZoneInfo("America/Chicago")).date() - (x.created_at.date() if x.created_at else datetime.date.today())).days
         ))
 
