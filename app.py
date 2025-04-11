@@ -178,7 +178,8 @@ def process_schedule():
     tz = pytz.timezone("America/Chicago")
 
     # Define the specific day (e.g., today) and make it timezone-aware
-    specific_day = tz.localize(datetime.datetime.today().replace(hour=0, minute=0, second=0, microsecond=0))
+    now = datetime.datetime.now(tz)
+    specific_day = now.replace(hour=0, minute=0, second=0, microsecond=0)
 
     # Calculate the start and end of the day
     time_min = specific_day.isoformat()
