@@ -414,8 +414,8 @@ def smarter_schedule(items, timeslots, num_schedules=2):
                     continue
 
                 item_copy = copy.deepcopy(item)
-                item_copy.calculated_start = start_slot.start + datetime.timedelta(minutes=item.buffer_before)
-                item_copy.calculated_end = item_copy.calculated_start + datetime.timedelta(minutes=item.duration())
+                item_copy.calculated_start = start_slot.start
+                item_copy.calculated_end = start_slot.start + datetime.timedelta(minutes=item.duration_with_buffer())
 
                 scheduled.append(item_copy)
                 for j in block:
