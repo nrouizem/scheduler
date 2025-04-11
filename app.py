@@ -288,9 +288,6 @@ def process_schedule():
     # Merge calendar events + tasks
     items_to_schedule = internal_events + task_objs
 
-    for item in items_to_schedule:
-        print(item)
-
     greedy_attempt = greedy_schedule(copy.deepcopy(items_to_schedule), all_timeslots)
     if greedy_attempt:
         print("Used greedy schedule as fallback")
@@ -305,9 +302,16 @@ def process_schedule():
         "unscheduled": smart_unscheduled
     }
     
+    def serialize_item(item):
+        d = item.__dict__.copy()
+        for key in ["calculated_start", "calculated_end", "real_start", "real_end", "start", "end"]:
+            if key in d and isinstance(d[key], datetime.datetime):
+                d[key] = d[key].isoformat()
+        return d
+
     session["last_schedule_ortools"] = [item.__dict__ for item in schedules["ortools"]]
-    session["last_schedule_smart1"] = [item.__dict__ for item in schedules["smart1"]]
-    session["last_schedule_smart2"] = [item.__dict__ for item in schedules["smart2"]]
+    session["last_schedule_smart1"] = [serialize_item(item) for item in schedules["smart1"]]
+    session["last_schedule_smart2"] = [serialize_item(item) for item in schedules["smart2"]]
     
     # Render a new page to display the optimal schedule.
     return render_template("schedules.html", schedules=schedules)
