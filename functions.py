@@ -185,6 +185,33 @@ def score_time(item, timeslot):
     # Use an exponential decay function. When time_delta is 0, exp(0)=1.
     return math.exp(-abs(delta) / tolerance)
 
+def category_preferences(task, timeslot):
+    bonus = 0.0
+    hour = timeslot.start.hour
+
+    if "writing" in task.category:
+        if 7 <= hour <= 11:
+            bonus += 0.5  # mornings preferred
+        else:
+            bonus -= 0.2  # avoid afternoons
+
+    elif "exercise" in task.category:
+        if timeslot.weather.get("sunlight", 1.0) < 0.5:
+            bonus -= 0.5  # penalize low sunlight
+        if 6 <= hour <= 9 or 16 <= hour <= 19:
+            bonus += 0.3  # morning or early evening
+
+    elif "email" in task.category:
+        bonus += 0.1 if hour >= 12 else -0.1  # slight preference for afternoons
+
+    elif "admin" in task.category:
+        if hour >= 17:
+            bonus += 0.2  # end-of-day tasks
+
+    # Add more categories here as needed
+
+    return bonus
+
 def score(item, timeslot):
     weights = [
         2,      # weather
@@ -209,6 +236,9 @@ def score(item, timeslot):
             days_old = (now.date() - item.created_at.date()).days
             aging_boost = min(1.0, days_old * 0.2)
             base_score += aging_boost
+        
+        #category_bonus = category_preferences(item, timeslot)
+        category_bonus = 0      # not using category bonus for now, but good to keep in mind
     
     if isinstance(item, Task) and item.flexibility > 0.5:
         # this task is very flexible, so deprioritize it slightly
@@ -224,7 +254,7 @@ def score(item, timeslot):
     penalty = 0.1 * days_ahead
     base_score -= penalty
 
-    return base_score + priority_boost
+    return base_score + priority_boost + category_bonus
 
 # ok naive implementation, we'll see how bad it is
 
@@ -277,6 +307,7 @@ def greedy_schedule(items, timeslots):
 
 # randomly assign timeslots (really dumb)
 def random_schedule(items, timeslots, num_schedules=2):
+    return None
     print("Processed with random schedule generator")
     valid_schedules = []
 
