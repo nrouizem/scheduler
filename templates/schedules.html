@@ -4,177 +4,68 @@
     <title>Optimal Schedules</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- Bootstrap CSS CDN -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-      /* The schedule container represents the day from 7:00 AM to 9:00 PM, i.e. 14 hours or 840 minutes */
-      .schedule-container {
-        position: relative;
-        height: {{ (SCHEDULE_END - SCHEDULE_START) * 60 }}px;
+      .day-column {
         border: 1px solid #ccc;
-        background: #fff;
-        margin-bottom: 20px;
+        padding: 10px;
+        margin-right: 10px;
+        min-width: 200px;
+        background: #f9f9f9;
       }
-      /* Each event block is absolutely positioned within the container */
-      .event-block {
-        position: absolute;
-        left: 5px;
-        right: 5px;
+      .schedule-grid {
+        display: flex;
+        overflow-x: auto;
+        gap: 10px;
+      }
+      .task-block {
         background-color: #f8d7da;
         border: 1px solid #f5c6cb;
-        padding: 2px;
+        padding: 5px;
+        margin-bottom: 10px;
         font-size: 0.85rem;
-        overflow: hidden;
-      }
-      /* Time labels on the left side of the container */
-      .time-labels {
-        position: absolute;
-        top: 0;
-        left: -60px;
-        width: 50px;
-        font-size: 0.75rem;
-        text-align: right;
-      }
-      .time-label {
-        position: absolute;
-        width: 100%;
+        border-radius: 4px;
       }
     </style>
   </head>
   <body class="container my-5">
-    <h1 class="mb-4 text-center">Optimal Schedules for Today</h1>
+    <h1 class="mb-4 text-center">Optimal Schedules</h1>
     <div class="row">
-      <!-- Schedule Column 1 -->
-      <div class="col-md-4">
-        <h2 class="text-center">Schedule 1</h2>
-        <div class="position-relative mb-3">
-          <div class="time-labels">
-            {% for hr in range(SCHEDULE_START, SCHEDULE_END + 1) %}
-              {% set pos = (hr - 7) * 60 %}
-              <div class="time-label" style="top: {{ pos }}px;">{{ "%d:00" % hr }}</div>
+      {% for label, schedule in [('Schedule 1', schedules.ortools), ('Schedule 2', schedules.random1), ('Schedule 3', schedules.random2)] %}
+        <div class="col-md-4">
+          <h2 class="text-center">{{ label }}</h2>
+          <div class="schedule-grid">
+            {% set grouped = {} %}
+            {% for item in schedule %}
+              {% set day = item.calculated_start.strftime('%A, %b %d') %}
+              {% if day not in grouped %}
+                {% set _ = grouped.update({day: []}) %}
+              {% endif %}
+              {% set _ = grouped[day].append(item) %}
             {% endfor %}
-          </div>
-          <div class="schedule-container mx-auto">
-            {% for item in schedules.ortools %}
-              {% set event_start_minutes = item.calculated_start.hour * 60 + item.calculated_start.minute %}
-              {% set event_end_minutes = item.calculated_end.hour * 60 + item.calculated_end.minute %}
-              {% set top = event_start_minutes - 420 %}
-              {% set duration = event_end_minutes - event_start_minutes %}
-              <div class="event-block" style="top: {{ top }}px; height: {{ duration }}px;">
-                <strong>{{ item.name }}</strong><br>
-                {{ item.calculated_start.strftime('%I:%M %p').lstrip('0') }} - 
-                {{ item.calculated_end.strftime('%I:%M %p').lstrip('0') }}
+
+            {% for day, items in grouped.items() %}
+              <div class="day-column">
+                <h5>{{ day }}</h5>
+                {% for item in items %}
+                  <div class="task-block">
+                    <strong>{{ item.name }}</strong><br>
+                    {{ item.calculated_start.strftime('%I:%M %p') }} - {{ item.calculated_end.strftime('%I:%M %p') }}<br>
+                    Category: {{ item.category }}<br>
+                    Focus: {{ item.required_focus }}<br>
+                    Flexibility: {{ item.flexibility }}<br>
+                    Priority: {{ item.priority }}
+                  </div>
+                {% endfor %}
               </div>
             {% endfor %}
           </div>
         </div>
-        <!-- Plain List of Events for Schedule 1 -->
-        <div>
-          <h5 class="text-center">Event List</h5>
-          <ul class="list-group">
-            {% for item in schedules.ortools %}
-              <li class="list-group-item">
-                <strong>{{ item.name }}</strong><br>
-                {{ item.calculated_start.strftime('%I:%M %p').lstrip('0') }} - 
-                {{ item.calculated_end.strftime('%I:%M %p').lstrip('0') }}<br>
-                Category: {{ item.category }}<br>
-                Focus: {{ item.required_focus }}<br>
-                Flexibility: {{ item.flexibility }}
-                Scheduled: {{ item.calculated_start.strftime('%A %Y-%m-%d %I:%M %p') }}
-              </li>
-            {% endfor %}
-          </ul>
-        </div>
-      </div>
-      <!-- Schedule Column 2 -->
-      <div class="col-md-4">
-        <h2 class="text-center">Schedule 2</h2>
-        <div class="position-relative mb-3">
-          <div class="time-labels">
-            {% for hr in range(SCHEDULE_START, SCHEDULE_END + 1) %}
-              {% set pos = (hr - 7) * 60 %}
-              <div class="time-label" style="top: {{ pos }}px;">{{ "%d:00" % hr }}</div>
-            {% endfor %}
-          </div>
-          <div class="schedule-container mx-auto">
-            {% for item in schedules.random1 %}
-              {% set event_start_minutes = item.calculated_start.hour * 60 + item.calculated_start.minute %}
-              {% set event_end_minutes = item.calculated_end.hour * 60 + item.calculated_end.minute %}
-              {% set top = event_start_minutes - (SCHEDULE_START * 60) %}
-              {% set duration = event_end_minutes - event_start_minutes %}
-              <div class="event-block" style="top: {{ top }}px; height: {{ duration }}px;">
-                <strong>{{ item.name }}</strong><br>
-                {{ item.calculated_start.strftime('%I:%M %p').lstrip('0') }} - 
-                {{ item.calculated_end.strftime('%I:%M %p').lstrip('0') }}
-              </div>
-            {% endfor %}
-          </div>
-        </div>
-        <!-- Plain List of Events for Schedule 2 -->
-        <div>
-          <h5 class="text-center">Event List</h5>
-          <ul class="list-group">
-            {% for item in schedules.random1 %}
-              <li class="list-group-item">
-                <strong>{{ item.name }}</strong><br>
-                {{ item.calculated_start.strftime('%I:%M %p').lstrip('0') }} - 
-                {{ item.calculated_end.strftime('%I:%M %p').lstrip('0') }}<br>
-                Category: {{ item.category }}<br>
-                Focus: {{ item.required_focus }}<br>
-                Flexibility: {{ item.flexibility }}
-                Scheduled: {{ item.calculated_start.strftime('%A %Y-%m-%d %I:%M %p') }}
-              </li>
-            {% endfor %}
-          </ul>
-        </div>
-      </div>
-      <!-- Schedule Column 3 -->
-      <div class="col-md-4">
-        <h2 class="text-center">Schedule 3</h2>
-        <div class="position-relative mb-3">
-          <div class="time-labels">
-            {% for hr in range(SCHEDULE_START, SCHEDULE_END + 1) %}
-              {% set pos = (hr - 7) * 60 %}
-              <div class="time-label" style="top: {{ pos }}px;">{{ "%d:00" % hr }}</div>
-            {% endfor %}
-          </div>
-          <div class="schedule-container mx-auto">
-            {% for item in schedules.random2 %}
-              {% set event_start_minutes = item.calculated_start.hour * 60 + item.calculated_start.minute %}
-              {% set event_end_minutes = item.calculated_end.hour * 60 + item.calculated_end.minute %}
-              {% set top = event_start_minutes - 420 %}
-              {% set duration = event_end_minutes - event_start_minutes %}
-              <div class="event-block" style="top: {{ top }}px; height: {{ duration }}px;">
-                <strong>{{ item.name }}</strong><br>
-                {{ item.calculated_start.strftime('%I:%M %p').lstrip('0') }} - 
-                {{ item.calculated_end.strftime('%I:%M %p').lstrip('0') }}
-              </div>
-            {% endfor %}
-          </div>
-        </div>
-        <!-- Plain List of Events for Schedule 3 -->
-        <div>
-          <h5 class="text-center">Event List</h5>
-          <ul class="list-group">
-            {% for item in schedules.random2 %}
-              <li class="list-group-item">
-                <strong>{{ item.name }}</strong><br>
-                {{ item.calculated_start.strftime('%I:%M %p').lstrip('0') }} - 
-                {{ item.calculated_end.strftime('%I:%M %p').lstrip('0') }}<br>
-                Category: {{ item.category }}<br>
-                Focus: {{ item.required_focus }}<br>
-                Flexibility: {{ item.flexibility }}
-                Scheduled: {{ item.calculated_start.strftime('%A %Y-%m-%d %I:%M %p') }}
-              </li>
-            {% endfor %}
-          </ul>
-        </div>
-      </div>
+      {% endfor %}
     </div>
     <div class="text-center mt-4">
       <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
     </div>
-    <!-- Bootstrap JS Bundle CDN -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>
