@@ -323,6 +323,72 @@ def random_schedule(items, timeslots, num_schedules=2):
 
     return valid_schedules
 
+def smarter_schedule(items: List[Task], timeslots: List[TimeSlot], num_schedules: int = 2) -> List[Tuple[List[Task], float]]:
+    schedules = []
+    seen_hashes = set()
+    MAX_ATTEMPTS = 500
+
+    for _ in range(MAX_ATTEMPTS):
+        scheduled = []
+        timeslot_used = set()
+        day_minutes = defaultdict(int)
+        total_score = 0
+
+        random.shuffle(items)
+        items.sort(key=lambda x: (
+            -x.priority,
+            x.flexibility,
+            -(datetime.datetime.now(ZoneInfo("America/Chicago")).date() - (x.created_at.date() if x.created_at else datetime.date.today())).days
+        ))
+
+        for item in items:
+            slots_per_item = math.ceil(item.duration_with_buffer() / timeslots[0].duration())
+            candidate_starts = list(range(len(timeslots) - slots_per_item + 1))
+            random.shuffle(candidate_starts)
+
+            placed = False
+            for i in candidate_starts:
+                block = list(range(i, i + slots_per_item))
+                if any(j in timeslot_used for j in block):
+                    continue
+
+                start_slot = timeslots[i]
+                end_slot = timeslots[i + slots_per_item - 1]
+                slot_day = start_slot.start.date()
+                total_minutes = day_minutes[slot_day] + item.duration()
+                if total_minutes > MAX_MINUTES_PER_DAY:
+                    continue
+
+                item_copy = copy.deepcopy(item)
+                item_copy.calculated_start = start_slot.start + datetime.timedelta(minutes=item.buffer_before)
+                item_copy.calculated_end = item_copy.calculated_start + datetime.timedelta(minutes=item.duration())
+
+                scheduled.append(item_copy)
+                for j in block:
+                    timeslot_used.add(j)
+                day_minutes[slot_day] += item.duration()
+                total_score += score(item, start_slot)
+                placed = True
+                break
+
+            if not placed:
+                continue
+
+        if not scheduled:
+            continue
+
+        sched_hash = tuple(sorted(item.calculated_start for item in scheduled))
+        if sched_hash in seen_hashes:
+            continue
+        seen_hashes.add(sched_hash)
+
+        scheduled.sort(key=lambda t: t.calculated_start)
+        schedules.append((scheduled, total_score))
+        if len(schedules) >= num_schedules:
+            break
+
+    return schedules
+
 def schedule_with_ortools(items, timeslots):
     """
     Schedule items (tasks and events) into contiguous timeslot blocks using OR-Tools.

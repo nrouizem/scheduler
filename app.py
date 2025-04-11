@@ -6,14 +6,19 @@ from zoneinfo import ZoneInfo
 from dateutil.parser import isoparse
 from config import DAY_START_HOUR, DAY_END_HOUR
 from storage import save_task, load_tasks
-from functions import Task
 from models import init_db, SessionLocal, TaskDB
 from matplotlib.figure import Figure
-from flask import Response
 import io
 from collections import defaultdict
-init_db()
+from flask import Flask, redirect, url_for, session, request, render_template, flash, jsonify, Response
+from dataclasses import asdict
+from google_auth_oauthlib.flow import Flow
+import google.oauth2.credentials
+import googleapiclient.discovery
+from functions import *
 
+
+init_db()
 
 def write_credentials_file():
     google_creds = os.environ.get('GOOGLE_CREDENTIALS')
@@ -31,12 +36,6 @@ def write_credentials_file():
 # Call the function immediately when the app starts.
 write_credentials_file()
 
-from flask import Flask, redirect, url_for, session, request, render_template, flash, jsonify
-from dataclasses import asdict
-from google_auth_oauthlib.flow import Flow
-import google.oauth2.credentials
-import googleapiclient.discovery
-from functions import *
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY")
@@ -297,17 +296,17 @@ def process_schedule():
         print("Used greedy schedule as fallback")
         items_to_schedule = greedy_attempt[0]
 
-    random_results = random_schedule(copy.deepcopy(items_to_schedule), all_timeslots, num_schedules=2)
+    smart_results = smarter_schedule(copy.deepcopy(items_to_schedule), all_timeslots, num_schedules=2)
 
     schedules = {
     "ortools": schedule(copy.deepcopy(items_to_schedule), all_timeslots)[0],
-    "random1": random_results[0][0] if len(random_results) > 0 else [],
-    "random2": random_results[1][0] if len(random_results) > 1 else []
+    "smart1": smart_results[0][0] if len(smart_results) > 0 else [],
+    "smart2": smart_results[1][0] if len(smart_results) > 1 else []
     }
     
     session["last_schedule_ortools"] = [item.__dict__ for item in schedules["ortools"]]
-    session["last_schedule_random1"] = [item.__dict__ for item in schedules["random1"]]
-    session["last_schedule_random2"] = [item.__dict__ for item in schedules["random2"]]
+    session["last_schedule_smart1"] = [item.__dict__ for item in schedules["smart1"]]
+    session["last_schedule_smart2"] = [item.__dict__ for item in schedules["smart2"]]
     
     # Render a new page to display the optimal schedule.
     return render_template("schedules.html", schedules=schedules)
