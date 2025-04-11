@@ -8,6 +8,7 @@ from ortools.sat.python import cp_model
 import math
 from ortools.sat.python import cp_model
 import os
+import json
 
 # Example focus level function based on time-of-day.
 def get_focus_level(time: datetime.datetime) -> float:
@@ -361,9 +362,21 @@ def convert_gcal_event(gcal_event: dict) -> Event:
     
     # Set default values for fields not provided by Google Calendar.
     # You might adjust these defaults or enhance the conversion based on your app's needs.
-    required_focus = 0.5   # Default focus level
-    category = 'meeting'   # Default category; you could infer this from event details if needed.
-    flexibility = 0.0      # Assume events from the calendar are fixed by default.
+    required_focus = 0.5
+    category = 'meeting'
+    flexibility = 0.0
+
+    # Try to parse metadata from the description field
+    description = gcal_event.get('description')
+    if description:
+        try:
+            meta = json.loads(description)
+            required_focus = float(meta.get("required_focus", required_focus))
+            category = meta.get("category", category)
+            flexibility = float(meta.get("flexibility", flexibility))
+        except (json.JSONDecodeError, ValueError, TypeError):
+            pass  # if parsing fails, fall back to defaults
+
     
     return Event(
         name=name,

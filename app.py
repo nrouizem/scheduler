@@ -156,11 +156,23 @@ def add_event():
         start_time_formatted = start_dt.strftime("%Y-%m-%dT%H:%M:%S")
         end_time_formatted = end_dt.strftime("%Y-%m-%dT%H:%M:%S")
 
-        # Create the event object.
+        # Get metadata from the form
+        required_focus = float(request.form.get("required_focus", 0.5))
+        category = request.form.get("category", "meeting")
+        flexibility = float(request.form.get("flexibility", 0.0))
+
+        # Create the metadata dict to store in description
+        metadata = {
+            "required_focus": required_focus,
+            "category": category,
+            "flexibility": flexibility
+        }
+
         event = {
             'summary': summary,
             'start': {'dateTime': start_time_formatted, 'timeZone': 'America/Chicago'},
             'end': {'dateTime': end_time_formatted, 'timeZone': 'America/Chicago'},
+            'description': json.dumps(metadata)  # store as a JSON string
         }
 
         credentials = google.oauth2.credentials.Credentials(**session['credentials'])
