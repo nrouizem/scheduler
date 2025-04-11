@@ -191,7 +191,14 @@ def score(item, timeslot):
         score_focus(item, timeslot),
         score_time(item, timeslot)
     ]
-    return np.dot(match_array, weights)
+
+    base_score = np.dot(match_array, weights)
+
+    priority_boost = 0
+    if isinstance(item, Task):
+        priority_boost = (item.priority - 3) * 0.5  # -1.0 to +1.0 scaling
+
+    return base_score + priority_boost
 
 # ok naive implementation, we'll see how bad it is
 

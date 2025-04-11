@@ -200,6 +200,7 @@ def add_task():
             required_focus=float(request.form.get("required_focus", 0.5)),
             category=request.form.get("category", "general"),
             flexibility=float(request.form.get("flexibility", 0.5)),
+            priority=int(request.form.get("priority", 3))
         )
         save_task(task)
         flash("Task added!")
