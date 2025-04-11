@@ -8,6 +8,8 @@ from config import DAY_START_HOUR, DAY_END_HOUR
 from storage import save_task, load_tasks
 from functions import Task
 from models import init_db, SessionLocal, TaskDB
+from matplotlib.figure import Figure
+from flask import Response
 init_db()
 
 
@@ -325,6 +327,37 @@ def delete_task(task_id):
         flash("Task not found.")
     db.close()
     return redirect(url_for("dashboard"))
+
+@app.route("/timeslot_quality_plot")
+def timeslot_quality_plot():
+    tz = ZoneInfo("America/Chicago")
+    now = datetime.datetime.now(tz)
+    start = now.replace(hour=DAY_START_HOUR, minute=0, second=0, microsecond=0)
+    end = now.replace(hour=DAY_END_HOUR, minute=0, second=0, microsecond=0)
+
+    timeslots = generate_timeslots(start, end, 30, get_focus_level, get_weather)
+
+    focus_scores = [slot.focus_level for slot in timeslots]
+    weather_scores = [score_weather(Task(name="", estimated_duration=30, required_focus=0.5, category="gardening", flexibility=0.5), slot) for slot in timeslots]
+    labels = [slot.start.strftime('%I:%M %p') for slot in timeslots]
+
+    fig = Figure(figsize=(10, 4))
+    ax = fig.subplots()
+    ax.plot(labels, focus_scores, label="Focus")
+    ax.plot(labels, weather_scores, label="Weather")
+    composite_scores = [(f + w)/2 for f, w in zip(focus_scores, weather_scores)]
+    ax.plot(labels, composite_scores, label="Composite", linestyle='--')
+    ax.set_xticks(labels[::2])  # reduce label clutter
+    ax.set_ylim(0, 1)
+    ax.set_title("Focus vs. Weather Score per Timeslot")
+    ax.legend()
+    fig.tight_layout()
+
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png")
+    buf.seek(0)
+    return Response(buf.getvalue(), mimetype="image/png")
+
 
 
 if __name__ == "__main__":

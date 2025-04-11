@@ -10,3 +10,4 @@ gunicorn
 python-dateutil
 SQLAlchemy
 psycopg2-binary
+matplotlib
