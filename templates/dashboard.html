@@ -28,6 +28,15 @@
         </li>
       {% endfor %}
     </ul>
+    <h2>Tasks</h2>
+    <ul>
+      {% for task in session.get('tasks', []) %}
+        <li>
+          <strong>{{ task.name }}</strong> – {{ task.estimated_duration }} mins, Flex: {{ task.flexibility }}
+        </li>
+      {% endfor %}
+    </ul>
+    <a href="{{ url_for('add_task') }}">Add a New Task</a>
     <a href="{{ url_for('add_event') }}">Add a New Event</a>
     <br>
     <!-- New button/link to process and view the optimal schedule -->

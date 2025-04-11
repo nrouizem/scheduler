@@ -5,6 +5,7 @@ import copy
 from zoneinfo import ZoneInfo
 from dateutil.parser import isoparse
 from config import DAY_START_HOUR, DAY_END_HOUR
+from functions import Task
 
 def write_credentials_file():
     google_creds = os.environ.get('GOOGLE_CREDENTIALS')
@@ -182,6 +183,25 @@ def add_event():
         return redirect(url_for('dashboard'))
     return render_template("add_event.html")
 
+@app.route("/add_task", methods=["GET", "POST"])
+def add_task():
+    if "tasks" not in session:
+        session["tasks"] = []
+
+    if request.method == "POST":
+        task = {
+            "name": request.form["name"],
+            "estimated_duration": int(request.form["duration"]),
+            "required_focus": float(request.form.get("required_focus", 0.5)),
+            "category": request.form.get("category", "general"),
+            "flexibility": float(request.form.get("flexibility", 0.5)),
+        }
+        session["tasks"].append(task)
+        flash("Task added!")
+        return redirect(url_for("dashboard"))
+
+    return render_template("add_task.html")
+
 @app.route("/process_schedule")
 def process_schedule():
     if 'credentials' not in session:
@@ -218,18 +238,25 @@ def process_schedule():
     day_end = today.replace(hour=DAY_END_HOUR, minute=0, second=0, microsecond=0)
     slot_duration = 15  # minutes
     timeslots = generate_timeslots(day_start, day_end, slot_duration, get_focus_level, get_weather)
-    for event in internal_events:
-        print(event)
 
-    greedy_attempt = greedy_schedule(copy.deepcopy(internal_events), timeslots)
+    task_dicts = session.get("tasks", [])
+    task_objs = [Task(**task_dict) for task_dict in task_dicts]
+
+    # Merge calendar events + tasks
+    items_to_schedule = internal_events + task_objs
+
+    for item in items_to_schedule:
+        print(item)
+
+    greedy_attempt = greedy_schedule(copy.deepcopy(items_to_schedule), timeslots)
     if greedy_attempt:
         print("Used greedy schedule as fallback")
-        internal_events = greedy_attempt[0]
+        items_to_schedule = greedy_attempt[0]
 
-    random_results = random_schedule(copy.deepcopy(internal_events), timeslots, num_schedules=2)
+    random_results = random_schedule(copy.deepcopy(items_to_schedule), timeslots, num_schedules=2)
 
     schedules = {
-        "ortools": schedule(copy.deepcopy(internal_events), timeslots)[0],
+        "ortools": schedule(copy.deepcopy(items_to_schedule), timeslots)[0],
         "random1": random_results[0][0] if len(random_results) > 0 else [],
         "random2": random_results[1][0] if len(random_results) > 1 else []
     }
