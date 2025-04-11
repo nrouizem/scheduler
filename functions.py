@@ -204,7 +204,7 @@ def score(item, timeslot):
         priority_boost = (item.priority - 3) * 0.5  # -1.0 to +1.0 scaling
         # Aging boost (max +1 after 5 days)
         if item.created_at:
-            now = datetime.now(tz)
+            now = datetime.datetime.now(tz)
             days_old = (now.date() - item.created_at.date()).days
             aging_boost = min(1.0, days_old * 0.2)
             base_score += aging_boost

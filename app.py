@@ -352,7 +352,7 @@ def timeslot_quality_plot():
     ax.plot(labels, weather_scores, label="Weather")
     composite_scores = [(f + w)/2 for f, w in zip(focus_scores, weather_scores)]
     ax.plot(labels, composite_scores, label="Composite", linestyle='--')
-    ax.set_xticks(labels[::2])  # reduce label clutter
+    ax.set_xticks(labels[::4])  # reduce label clutter
     ax.set_ylim(0, 1)
     ax.set_title("Focus vs. Weather Score per Timeslot")
     ax.legend()
