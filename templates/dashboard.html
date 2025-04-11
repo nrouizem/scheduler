@@ -34,6 +34,31 @@
   </div>
 </div>
 
+<!-- Tasks List -->
+{% if tasks %}
+  <div class="row mt-5">
+    <div class="col">
+      <div class="card shadow-sm">
+        <div class="card-header bg-light">
+          <h5 class="mb-0">Your Saved Tasks</h5>
+        </div>
+        <ul class="list-group list-group-flush">
+          {% for task in tasks %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <div>
+                <strong>{{ task.name }}</strong> &nbsp;
+                <span class="text-muted">({{ task.category }}, {{ task.estimated_duration }} min)</span><br>
+                <small>Priority: {{ task.priority }}, Flexibility: {{ task.flexibility }}, Focus: {{ task.required_focus }}</small>
+              </div>
+              <a href="{{ url_for('delete_task', task_id=task.id) }}" class="btn btn-sm btn-outline-danger">Delete</a>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+{% endif %}
+
 <div class="row mt-4">
   <div class="col">
     <div class="alert alert-info text-center">
