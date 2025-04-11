@@ -2,65 +2,66 @@
 {% block content %}
 <h1 class="mb-5 text-center">Optimal Schedules</h1>
 
-{% for schedule_key, schedule_title in [("ortools", "Schedule 1 (Optimal)"), ("smart1", "Schedule 2 (Smart)"), ("smart2", "Schedule 3 (Smart)")] %}
-  <div class="mb-5">
-    <div class="card shadow-sm">
-      <div class="card-header bg-primary text-white text-center">
-        <h5 class="mb-0">{{ schedule_title }}</h5>
-      </div>
-      <div class="card-body p-3">
+<div class="row">
+  {% for schedule_key, schedule_title in [("ortools", "Schedule 1 (Optimal)"), ("smart1", "Schedule 2 (Smart)"), ("smart2", "Schedule 3 (Smart)")] %}
+    <div class="col-12 mb-5">
+      <div class="card shadow schedule-card">
+        <div class="card-header bg-primary text-white text-center">
+          <h5 class="mb-0">{{ schedule_title }}</h5>
+        </div>
+        <div class="card-body">
 
-        <!-- Group items by date -->
-        {% set by_day = {} %}
-        {% for item in schedules[schedule_key] %}
-          {% set st = item.real_start if item.real_start else item.calculated_start if item.calculated_start else item.start %}
-          {% set date_key = st.date().isoformat() %}
-          {% if date_key not in by_day %}
-            {% set _ = by_day.update({date_key: []}) %}
-          {% endif %}
-          {% set _ = by_day[date_key].append(item) %}
-        {% endfor %}
+          {% set by_day = {} %}
+          {% for item in schedules[schedule_key] %}
+            {% set st = item.real_start or item.calculated_start or item.start %}
+            {% set date_key = st.date().isoformat() %}
+            {% if date_key not in by_day %}
+              {% set _ = by_day.update({date_key: []}) %}
+            {% endif %}
+            {% set _ = by_day[date_key].append(item) %}
+          {% endfor %}
 
-        <!-- Loop over each day -->
-        {% for day_key in by_day|sort %}
-          <div class="mb-4">
-            <h6 class="text-center mb-2">{{ day_key }}</h6>
-            <div class="schedule-column mx-auto position-relative">
+          {% for day_key in by_day|sort %}
+            <div class="day-section mb-4">
+              <div class="day-header bg-light p-2 rounded text-center mb-2">
+                <h6 class="mb-0">{{ day_key }}</h6>
+              </div>
+              <div class="schedule-column position-relative mx-auto">
 
-              <!-- Time Labels -->
-              {% for hr in range(SCHEDULE_START, SCHEDULE_END + 1) %}
-                {% set top = (hr - SCHEDULE_START) * 60 %}
-                <div class="time-label" style="top:{{ top }}px;">{{ "%02d:00"|format(hr) }}</div>
-                <div class="schedule-time-line" style="top:{{ top }}px;"></div>
-              {% endfor %}
+                {% for hr in range(SCHEDULE_START, SCHEDULE_END + 1) %}
+                  {% set top = (hr - SCHEDULE_START) * 60 %}
+                  <div class="time-label" style="top:{{ top }}px;">{{ "%02d:00"|format(hr) }}</div>
+                  <div class="schedule-time-line" style="top:{{ top }}px;"></div>
+                {% endfor %}
 
-              <!-- Events/Tasks -->
-              {% for item in by_day[day_key] %}
-                {% set st = item.real_start if item.real_start else item.calculated_start if item.calculated_start else item.start %}
-                {% set et = item.real_end if item.real_end else item.calculated_end if item.calculated_end else item.end %}
-                {% set start_min = st.hour * 60 + st.minute %}
-                {% set end_min = et.hour * 60 + et.minute %}
-                {% set top = start_min - (SCHEDULE_START * 60) %}
-                {% set height = end_min - start_min %}
-                {% set css_class = "task" if item.real_start else "event" %}
-                <div class="schedule-event {{ css_class }}" style="top: {{ top }}px; height: {{ height }}px;">
-                  <strong>{{ item.name }}</strong><br>
-                  {{ st.strftime('%I:%M %p').lstrip('0') }} - {{ et.strftime('%I:%M %p').lstrip('0') }}
-                </div>
-              {% endfor %}
+                {% for item in by_day[day_key] %}
+                  {% set st = item.real_start or item.calculated_start or item.start %}
+                  {% set et = item.real_end or item.calculated_end or item.end %}
+                  {% set start_min = st.hour * 60 + st.minute %}
+                  {% set end_min = et.hour * 60 + et.minute %}
+                  {% set top = start_min - (SCHEDULE_START * 60) %}
+                  {% set height = end_min - start_min %}
+                  {% set css_class = "task" if item.real_start else "event" %}
+                  <div class="schedule-event {{ css_class }}" style="top: {{ top }}px; height: {{ height }}px;" title="{{ item.name }} ({{ st.strftime('%I:%M %p') }} - {{ et.strftime('%I:%M %p') }})">
+                    <strong>{{ item.name }}</strong><br>
+                    <small>{{ st.strftime('%I:%M %p') }} - {{ et.strftime('%I:%M %p') }}</small>
+                  </div>
+                {% endfor %}
 
+              </div>
             </div>
-          </div>
-        {% endfor %}
+          {% endfor %}
 
-        <!-- Commit button -->
-        <form method="post" action="{{ url_for('commit_schedule', which=schedule_key) }}">
-          <button class="btn btn-success w-100 mt-3">Use This Schedule</button>
-        </form>
+          <form method="post" action="{{ url_for('commit_schedule', which=schedule_key) }}">
+            <div class="text-center mt-4">
+              <button class="btn btn-success w-100">Use This Schedule</button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
-  </div>
-{% endfor %}
+  {% endfor %}
+</div>
 
 {% if schedules.unscheduled %}
   <div class="mt-5">

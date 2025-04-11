@@ -1,0 +1,115 @@
+body {
+    background-color: #f9fbfc;
+    font-family: 'Inter', sans-serif;
+  }
+  
+  .card {
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  }
+  
+  .schedule-column {
+    position: relative;
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    height: 840px;
+    overflow: hidden;
+  }
+  
+  .schedule-event {
+    position: absolute;
+    left: 0;
+    right: 0;
+    border-radius: 0.25rem;
+    padding: 4px;
+    font-size: 0.8rem;
+    color: white;
+    border: 1px solid #ced4da;
+    line-height: 1.2;
+  }
+  
+  .schedule-event.task {
+    background-color: #0d6efd; /* primary */
+  }
+  
+  .schedule-event.event {
+    background-color: #6c757d; /* secondary */
+  }
+  
+  .time-label {
+    position: absolute;
+    left: -50px;
+    width: 45px;
+    text-align: right;
+    font-size: 0.7rem;
+    color: #999;
+  }
+  
+  .schedule-time-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: #eee;
+  }
+  
+  .schedule-card {
+    border: none;
+    border-radius: 0.5rem;
+    overflow: hidden;
+  }
+  
+  .day-header {
+    background-color: #f1f3f5;
+    border-left: 4px solid #0d6efd;
+  }
+  
+  .schedule-column {
+    position: relative;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    height: 840px;
+    overflow: hidden;
+  }
+  
+  .schedule-event {
+    position: absolute;
+    left: 2%;
+    width: 96%;
+    border-radius: 0.25rem;
+    padding: 6px;
+    font-size: 0.85rem;
+    color: #fff;
+    border: 1px solid #ced4da;
+    line-height: 1.2;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+  }
+  
+  .schedule-event.task {
+    background-color: #0d6efd; /* blue */
+  }
+  
+  .schedule-event.event {
+    background-color: #6c757d; /* gray */
+  }
+  
+  .time-label {
+    position: absolute;
+    left: -60px;
+    width: 50px;
+    text-align: right;
+    font-size: 0.75rem;
+    color: #6c757d;
+  }
+  
+  .schedule-time-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: #e9ecef;
+  }
+  
