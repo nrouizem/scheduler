@@ -197,6 +197,14 @@ def score(item, timeslot):
     priority_boost = 0
     if isinstance(item, Task):
         priority_boost = (item.priority - 3) * 0.5  # -1.0 to +1.0 scaling
+    
+    if isinstance(item, Task) and item.flexibility > 0.5:
+        # this task is very flexible, so deprioritize it slightly
+        base_score *= (1 - 0.2 * item.flexibility)
+    
+    if isinstance(item, Task) and item.flexibility < 0.5:
+        if timeslot.start.date() == datetime.date.today():
+            base_score += 1.0  # boost for today if task is inflexible
 
     return base_score + priority_boost
 

@@ -213,6 +213,8 @@ def process_schedule():
     if 'credentials' not in session:
         return redirect(url_for('index'))
     
+    NUM_DAYS = 3  # Look ahead N days
+
     tz = ZoneInfo("America/Chicago")
 
     # Define the specific day (e.g., today) and make it timezone-aware
@@ -221,7 +223,7 @@ def process_schedule():
 
     # Calculate the start and end of the day
     time_min = specific_day.isoformat()
-    time_max = (specific_day + datetime.timedelta(days=1)).isoformat()
+    time_max = (specific_day + datetime.timedelta(days=NUM_DAYS)).isoformat()
 
     # Retrieve events within that time window
     credentials = google.oauth2.credentials.Credentials(**session['credentials'])
@@ -240,10 +242,17 @@ def process_schedule():
 
     # generate timeslots
     today = datetime.datetime.now(ZoneInfo("America/Chicago"))
-    day_start = today.replace(hour=DAY_START_HOUR, minute=0, second=0, microsecond=0)
-    day_end = today.replace(hour=DAY_END_HOUR, minute=0, second=0, microsecond=0)
     slot_duration = 15  # minutes
-    timeslots = generate_timeslots(day_start, day_end, slot_duration, get_focus_level, get_weather)
+
+    all_timeslots = []
+
+    for offset in range(NUM_DAYS):
+        day = today + datetime.timedelta(days=offset)
+        day_start = day.replace(hour=DAY_START_HOUR, minute=0, second=0, microsecond=0)
+        day_end = day.replace(hour=DAY_END_HOUR, minute=0, second=0, microsecond=0)
+        
+        day_slots = generate_timeslots(day_start, day_end, slot_duration, get_focus_level, get_weather)
+        all_timeslots.extend(day_slots)
 
     task_objs = load_tasks()
 
@@ -261,10 +270,10 @@ def process_schedule():
     random_results = random_schedule(copy.deepcopy(items_to_schedule), timeslots, num_schedules=2)
 
     schedules = {
-        "ortools": schedule(copy.deepcopy(items_to_schedule), timeslots)[0],
-        "random1": random_results[0][0] if len(random_results) > 0 else [],
-        "random2": random_results[1][0] if len(random_results) > 1 else []
-    }
+    "ortools": schedule(copy.deepcopy(items_to_schedule), all_timeslots)[0],
+    "random1": random_results[0][0] if len(random_results) > 0 else [],
+    "random2": random_results[1][0] if len(random_results) > 1 else []
+}
     
     # Render a new page to display the optimal schedule.
     return render_template("schedules.html", schedules=schedules)
