@@ -3,6 +3,8 @@ import json
 import datetime
 import pytz
 import copy
+import zoneinfo
+from dateutil.parser import isoparse
 
 def write_credentials_file():
     google_creds = os.environ.get('GOOGLE_CREDENTIALS')
@@ -103,7 +105,9 @@ def dashboard():
     tz = pytz.timezone("America/Chicago")
 
     # Define the specific day (e.g., today) and make it timezone-aware
-    specific_day = tz.localize(datetime.datetime.today().replace(hour=0, minute=0, second=0, microsecond=0))
+    now = datetime.datetime.now(tz)
+    specific_day = now.replace(hour=0, minute=0, second=0, microsecond=0)
+
 
     # Calculate the start and end of the day
     time_min = specific_day.isoformat()
@@ -145,7 +149,7 @@ def add_event():
         end_time_raw = request.form.get("end_time")      # e.g., "2025-04-10T10:00"
 
         # Convert the raw strings to datetime objects
-        start_dt = datetime.datetime.fromisoformat(start_time_raw)
+        start_dt = isoparse(start_time_raw)
         end_dt = datetime.datetime.fromisoformat(end_time_raw)
 
         # Format datetime to include seconds (RFC3339-compliant, without timezone offset)
