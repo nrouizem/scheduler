@@ -7,6 +7,9 @@ from dateutil.parser import isoparse
 from config import DAY_START_HOUR, DAY_END_HOUR
 from storage import save_task, load_tasks
 from functions import Task
+from models import init_db
+init_db()
+
 
 def write_credentials_file():
     google_creds = os.environ.get('GOOGLE_CREDENTIALS')

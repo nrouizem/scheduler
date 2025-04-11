@@ -8,3 +8,5 @@ numpy
 tqdm
 gunicorn
 python-dateutil
+SQLAlchemy
+psycopg2-binary

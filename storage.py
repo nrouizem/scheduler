@@ -1,18 +1,27 @@
-import json
-import os
+from models import TaskDB, SessionLocal
 from functions import Task
 
-TASKS_FILE = "tasks.json"
-
 def load_tasks() -> list[Task]:
-    if not os.path.exists(TASKS_FILE):
-        return []
-    with open(TASKS_FILE, "r") as f:
-        task_dicts = json.load(f)
-    return [Task(**t) for t in task_dicts]
+    db = SessionLocal()
+    tasks = db.query(TaskDB).all()
+    db.close()
+    return [Task(
+        name=t.name,
+        estimated_duration=t.estimated_duration,
+        required_focus=t.required_focus,
+        category=t.category,
+        flexibility=t.flexibility
+    ) for t in tasks]
 
 def save_task(new_task: Task):
-    tasks = load_tasks()
-    tasks.append(new_task)
-    with open(TASKS_FILE, "w") as f:
-        json.dump([t.__dict__ for t in tasks], f, indent=2)
+    db = SessionLocal()
+    db_task = TaskDB(
+        name=new_task.name,
+        estimated_duration=new_task.estimated_duration,
+        required_focus=new_task.required_focus,
+        category=new_task.category,
+        flexibility=new_task.flexibility
+    )
+    db.add(db_task)
+    db.commit()
+    db.close()

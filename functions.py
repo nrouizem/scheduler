@@ -81,6 +81,10 @@ class Task:
     buffer_before: int = 15 # travel/other time beforehand to take into account
     buffer_after: int = 15 # rest/other time after to take into account
 
+    def duration(self):
+        """Helper function to be consistent with Event class."""
+        return self.estimated_duration
+
     def duration_with_buffer(self) -> int:
         """Return the duration of task (buffer included) in minutes."""
         return self.estimated_duration + self.buffer_before + self.buffer_after
