@@ -113,3 +113,25 @@ body {
     background-color: #e9ecef;
   }
   
+  .day-column {
+    min-width: 300px;
+    flex-shrink: 0;
+  }
+  
+  .schedule-wrapper {
+    transition: all 0.3s ease-in-out;
+  }
+  
+  .btn-group .btn.active {
+    background-color: #0d6efd;
+    color: white;
+  }
+  
+  .schedule-column {
+    height: 840px;
+    border: 1px solid #dee2e6;
+    background-color: #fff;
+    border-radius: 0.25rem;
+    position: relative;
+  }
+  

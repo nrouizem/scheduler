@@ -1,67 +1,78 @@
 {% extends "base.html" %}
 {% block content %}
-<h1 class="mb-5 text-center">Optimal Schedules</h1>
+<h1 class="mb-4 text-center">Optimal Schedules</h1>
 
-<div class="row">
-  {% for schedule_key, schedule_title in [("ortools", "Schedule 1 (Optimal)"), ("smart1", "Schedule 2 (Smart)"), ("smart2", "Schedule 3 (Smart)")] %}
-    <div class="col-12 mb-5">
-      <div class="card shadow schedule-card">
-        <div class="card-header bg-primary text-white text-center">
-          <h5 class="mb-0">{{ schedule_title }}</h5>
-        </div>
-        <div class="card-body">
-
-          {% set by_day = {} %}
-          {% for item in schedules[schedule_key] %}
-            {% set st = item.real_start or item.calculated_start or item.start %}
-            {% set date_key = st.date().isoformat() %}
-            {% if date_key not in by_day %}
-              {% set _ = by_day.update({date_key: []}) %}
-            {% endif %}
-            {% set _ = by_day[date_key].append(item) %}
-          {% endfor %}
-
-          {% for day_key in by_day|sort %}
-            <div class="day-section mb-4">
-              <div class="day-header bg-light p-2 rounded text-center mb-2">
-                <h6 class="mb-0">{{ day_key }}</h6>
-              </div>
-              <div class="schedule-column position-relative mx-auto">
-
-                {% for hr in range(SCHEDULE_START, SCHEDULE_END + 1) %}
-                  {% set top = (hr - SCHEDULE_START) * 60 %}
-                  <div class="time-label" style="top:{{ top }}px;">{{ "%02d:00"|format(hr) }}</div>
-                  <div class="schedule-time-line" style="top:{{ top }}px;"></div>
-                {% endfor %}
-
-                {% for item in by_day[day_key] %}
-                  {% set st = item.real_start or item.calculated_start or item.start %}
-                  {% set et = item.real_end or item.calculated_end or item.end %}
-                  {% set start_min = st.hour * 60 + st.minute %}
-                  {% set end_min = et.hour * 60 + et.minute %}
-                  {% set top = start_min - (SCHEDULE_START * 60) %}
-                  {% set height = end_min - start_min %}
-                  {% set css_class = "task" if item.real_start else "event" %}
-                  <div class="schedule-event {{ css_class }}" style="top: {{ top }}px; height: {{ height }}px;" title="{{ item.name }} ({{ st.strftime('%I:%M %p') }} - {{ et.strftime('%I:%M %p') }})">
-                    <strong>{{ item.name }}</strong><br>
-                    <small>{{ st.strftime('%I:%M %p') }} - {{ et.strftime('%I:%M %p') }}</small>
-                  </div>
-                {% endfor %}
-
-              </div>
-            </div>
-          {% endfor %}
-
-          <form method="post" action="{{ url_for('commit_schedule', which=schedule_key) }}">
-            <div class="text-center mt-4">
-              <button class="btn btn-success w-100">Use This Schedule</button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  {% endfor %}
+<!-- Toggle Buttons -->
+<div class="text-center mb-4">
+  <div class="btn-group" role="group">
+    <button class="btn btn-outline-primary active" onclick="showSchedule('schedule-ortools')">Schedule 1</button>
+    <button class="btn btn-outline-primary" onclick="showSchedule('schedule-smart1')">Schedule 2</button>
+    <button class="btn btn-outline-primary" onclick="showSchedule('schedule-smart2')">Schedule 3</button>
+  </div>
 </div>
+
+<!-- Schedule Views -->
+{% for schedule_key, schedule_title in [("ortools", "Schedule 1 (Optimal)"), ("smart1", "Schedule 2 (Smart)"), ("smart2", "Schedule 3 (Smart)")] %}
+<div id="schedule-{{ schedule_key }}" class="schedule-wrapper {% if not loop.first %}d-none{% endif %}">
+  <div class="card shadow mb-5">
+    <div class="card-header bg-primary text-white text-center">
+      <h5 class="mb-0">{{ schedule_title }}</h5>
+    </div>
+    <div class="card-body">
+
+      {% set by_day = {} %}
+      {% for item in schedules[schedule_key] %}
+        {% set st = item.real_start or item.calculated_start or item.start %}
+        {% set date_key = st.date().isoformat() %}
+        {% if date_key not in by_day %}
+          {% set _ = by_day.update({date_key: []}) %}
+        {% endif %}
+        {% set _ = by_day[date_key].append(item) %}
+      {% endfor %}
+
+      <!-- Horizontal Scroll -->
+      <div class="d-flex gap-4 overflow-auto pb-3">
+        {% for day_key in by_day|sort %}
+        <div class="day-column">
+          <div class="bg-light text-center py-2 mb-2 rounded-top fw-semibold">{{ day_key }}</div>
+          <div class="schedule-column position-relative">
+
+            {% for hr in range(SCHEDULE_START, SCHEDULE_END + 1) %}
+              {% set top = (hr - SCHEDULE_START) * 60 %}
+              <div class="time-label" style="top:{{ top }}px;">{{ "%02d:00"|format(hr) }}</div>
+              <div class="schedule-time-line" style="top:{{ top }}px;"></div>
+            {% endfor %}
+
+            {% for item in by_day[day_key] %}
+              {% set st = item.real_start or item.calculated_start or item.start %}
+              {% set et = item.real_end or item.calculated_end or item.end %}
+              {% set start_min = st.hour * 60 + st.minute %}
+              {% set end_min = et.hour * 60 + et.minute %}
+              {% set top = start_min - (SCHEDULE_START * 60) %}
+              {% set height = end_min - start_min %}
+              {% set css_class = "task" if item.real_start else "event" %}
+              <div class="schedule-event {{ css_class }}" style="top: {{ top }}px; height: {{ height }}px;" title="{{ item.name }} ({{ st.strftime('%I:%M %p') }} - {{ et.strftime('%I:%M %p') }})">
+                <strong>{{ item.name }}</strong><br>
+                <small>{{ st.strftime('%I:%M %p') }} - {{ et.strftime('%I:%M %p') }}</small>
+              </div>
+            {% endfor %}
+
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Action -->
+      <form method="post" action="{{ url_for('commit_schedule', which=schedule_key) }}">
+        <div class="text-center mt-4">
+          <button class="btn btn-success w-100">Use This Schedule</button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+{% endfor %}
 
 {% if schedules.unscheduled %}
   <div class="mt-5">
@@ -82,4 +93,14 @@
 <div class="text-center mt-4">
   <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
 </div>
+
+<script>
+  function showSchedule(id) {
+    document.querySelectorAll('.schedule-wrapper').forEach(el => el.classList.add('d-none'));
+    document.getElementById(id).classList.remove('d-none');
+
+    document.querySelectorAll('.btn-group .btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+  }
+</script>
 {% endblock %}
