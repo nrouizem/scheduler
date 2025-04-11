@@ -220,11 +220,18 @@ def process_schedule():
     timeslots = generate_timeslots(day_start, day_end, slot_duration, get_focus_level, get_weather)
     for event in internal_events:
         print(event)
-    optimal_schedule = schedule(copy.deepcopy(internal_events), timeslots)[0]
+
+    greedy_attempt = greedy_schedule(copy.deepcopy(internal_events), timeslots)
+    if greedy_attempt:
+        print("Used greedy schedule as fallback")
+        internal_events = greedy_attempt[0]
+
+    random_results = random_schedule(copy.deepcopy(internal_events), timeslots, num_schedules=2)
+
     schedules = {
-        "ortools": optimal_schedule,
-        "random1": random_schedule(copy.deepcopy(internal_events), timeslots)[0],
-        "random2": random_schedule(copy.deepcopy(internal_events), timeslots)[0]
+        "ortools": schedule(copy.deepcopy(internal_events), timeslots)[0],
+        "random1": random_results[0][0] if len(random_results) > 0 else [],
+        "random2": random_results[1][0] if len(random_results) > 1 else []
     }
     
     # Render a new page to display the optimal schedule.
