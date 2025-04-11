@@ -191,71 +191,97 @@ def score(item, timeslot):
 
 # first just try to put each item in its best timeslot, see if it works
 def greedy_schedule(items, timeslots):
-    timeslots_used = []
+    timeslots_used = set()
     schedule = []
     t_score = 0
+
     for item in items:
-        best_timeslots = []
-        best_score = 0
+        best_start = None
+        best_score = -1
         timeslots_required = math.ceil(item.duration_with_buffer() / timeslots[0].duration())
-        for i, timeslot in enumerate(timeslots):
-            if i + timeslots_required > len(timeslots):
-                break
-            sc = score(item, timeslot)
+
+        for i in range(len(timeslots) - timeslots_required + 1):
+            slot_indices = range(i, i + timeslots_required)
+
+            # Skip if overlap
+            if any(idx in timeslots_used for idx in slot_indices):
+                continue
+
+            sc = score(item, timeslots[i])
             if sc > best_score:
-                best_timeslots = [j for j in range(i, i + timeslots_required)]
+                best_start = i
                 best_score = sc
-        for timeslot in best_timeslots:
-            if timeslot in timeslots_used:
-                return None
-        timeslots_used.extend(best_timeslots)
-        item.calculated_start = timeslots[best_timeslots[0]].start
-        item.calculated_end = timeslots[best_timeslots[0]].start + datetime.timedelta(minutes=item.duration())
+
+        if best_start is None:
+            # No valid placement found
+            return None
+
+        # Assign timeslot indices
+        slot_indices = range(best_start, best_start + timeslots_required)
+        timeslots_used.update(slot_indices)
+
+        # Calculate actual scheduled time
+        start_slot = timeslots[best_start]
+        item.calculated_start = start_slot.start + datetime.timedelta(minutes=item.buffer_before)
+        item.calculated_end = item.calculated_start + datetime.timedelta(minutes=item.duration())
         schedule.append(item)
         t_score += best_score
-    
+
     schedule.sort(key=lambda task: task.calculated_start)
     return schedule, t_score
 
+
 # randomly assign timeslots (really dumb)
 def random_schedule(items, timeslots):
-    #greedy_attempt = greedy_schedule(items, timeslots)
-    #if greedy_attempt:
-    #    print("Processed with greedy schedule")
-    #    return greedy_attempt
+    greedy_attempt = greedy_schedule(items, timeslots)
+    if greedy_attempt:
+        print("Processed with greedy schedule")
+        return greedy_attempt
     
     print("Processed with random schedule generator")
     best_score = 0
     best_schedule = []
+
     for _ in range(10000):
         this_score = 0
         schedule = []
         flag = 0
         timeslots_used_idx = []
         random.shuffle(items)
+
         for item in items:
-            i = random.randint(0, len(timeslots)-1)
+            i = random.randint(0, len(timeslots) - 1)
             timeslots_required = math.ceil(item.duration_with_buffer() / timeslots[0].duration())
 
-            new_timeslots = [j for j in range(i, i + timeslots_required)]
-            for j in new_timeslots:
-                if j in timeslots_used_idx:
-                    flag = 1
-            if flag:
-                break
+            # Check if this item fits
+            if i + timeslots_required > len(timeslots):
+                flag = 1
+                break  # out-of-bounds placement
 
+            new_timeslots = [j for j in range(i, i + timeslots_required)]
+            if any(j in timeslots_used_idx for j in new_timeslots):
+                flag = 1
+                break  # overlap with previously used slots
+
+            # Valid slot: update used indexes and compute details
             timeslots_used_idx.extend(new_timeslots)
             this_score += score(item, timeslots[i])
             item.calculated_start = timeslots[i].start + datetime.timedelta(minutes=item.buffer_before)
             item.calculated_end = item.calculated_start + datetime.timedelta(minutes=item.duration())
             schedule.append(item)
-        
-        if this_score > best_score and flag == 0:
+
+        # If there was any overlap or failure, discard this attempt
+        if flag:
+            continue
+
+        # If this attempt is valid and better, keep it
+        if this_score > best_score:
             best_schedule = schedule.copy()
             best_score = this_score
-    
+
     best_schedule.sort(key=lambda task: task.calculated_start)
     return best_schedule, best_score
+
 
 def schedule_with_ortools(items, timeslots):
     """
