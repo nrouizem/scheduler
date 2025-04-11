@@ -4,6 +4,7 @@ import datetime
 import copy
 from zoneinfo import ZoneInfo
 from dateutil.parser import isoparse
+from config import DAY_START_HOUR, DAY_END_HOUR
 
 def write_credentials_file():
     google_creds = os.environ.get('GOOGLE_CREDENTIALS')
@@ -212,9 +213,9 @@ def process_schedule():
     internal_events = [convert_gcal_event(event) for event in gcal_events]
 
     # generate timeslots
-    today = datetime.datetime.now(zoneinfo.ZoneInfo("America/Chicago"))
-    day_start = today.replace(hour=8, minute=0, second=0, microsecond=0)
-    day_end = today.replace(hour=18, minute=0, second=0, microsecond=0)
+    today = datetime.datetime.now(ZoneInfo("America/Chicago"))
+    day_start = today.replace(hour=DAY_START_HOUR, minute=0, second=0, microsecond=0)
+    day_end = today.replace(hour=DAY_END_HOUR, minute=0, second=0, microsecond=0)
     slot_duration = 15  # minutes
     timeslots = generate_timeslots(day_start, day_end, slot_duration, get_focus_level, get_weather)
     for event in internal_events:
@@ -257,6 +258,12 @@ def datetimeformat(value):
     time_str = dt.strftime('%I:%M %p').lstrip('0')
     return f"{day_str} {time_str}"
 
+@app.context_processor
+def inject_schedule_bounds():
+    return dict(
+        SCHEDULE_START=DAY_START_HOUR,
+        SCHEDULE_END=DAY_END_HOUR
+    )
+
 if __name__ == "__main__":
-    # For local testing
     app.run(debug=True)

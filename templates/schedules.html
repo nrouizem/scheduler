@@ -10,7 +10,7 @@
       /* The schedule container represents the day from 7:00 AM to 9:00 PM, i.e. 14 hours or 840 minutes */
       .schedule-container {
         position: relative;
-        height: 840px;
+        height: {{ (SCHEDULE_END - SCHEDULE_START) * 60 }}px;
         border: 1px solid #ccc;
         background: #fff;
         margin-bottom: 20px;
@@ -49,7 +49,7 @@
         <h2 class="text-center">Schedule 1</h2>
         <div class="position-relative mb-3">
           <div class="time-labels">
-            {% for hr in range(7, 22) %}
+            {% for hr in range(SCHEDULE_START, SCHEDULE_END + 1) %}
               {% set pos = (hr - 7) * 60 %}
               <div class="time-label" style="top: {{ pos }}px;">{{ "%d:00" % hr }}</div>
             {% endfor %}
@@ -90,7 +90,7 @@
         <h2 class="text-center">Schedule 2</h2>
         <div class="position-relative mb-3">
           <div class="time-labels">
-            {% for hr in range(7, 22) %}
+            {% for hr in range(SCHEDULE_START, SCHEDULE_END + 1) %}
               {% set pos = (hr - 7) * 60 %}
               <div class="time-label" style="top: {{ pos }}px;">{{ "%d:00" % hr }}</div>
             {% endfor %}
@@ -99,7 +99,7 @@
             {% for item in schedules.random1 %}
               {% set event_start_minutes = item.calculated_start.hour * 60 + item.calculated_start.minute %}
               {% set event_end_minutes = item.calculated_end.hour * 60 + item.calculated_end.minute %}
-              {% set top = event_start_minutes - 420 %}
+              {% set top = event_start_minutes - (SCHEDULE_START * 60) %}
               {% set duration = event_end_minutes - event_start_minutes %}
               <div class="event-block" style="top: {{ top }}px; height: {{ duration }}px;">
                 <strong>{{ item.name }}</strong><br>
@@ -131,7 +131,7 @@
         <h2 class="text-center">Schedule 3</h2>
         <div class="position-relative mb-3">
           <div class="time-labels">
-            {% for hr in range(7, 22) %}
+            {% for hr in range(SCHEDULE_START, SCHEDULE_END + 1) %}
               {% set pos = (hr - 7) * 60 %}
               <div class="time-label" style="top: {{ pos }}px;">{{ "%d:00" % hr }}</div>
             {% endfor %}
