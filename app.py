@@ -15,6 +15,7 @@ from dataclasses import asdict
 from google_auth_oauthlib.flow import Flow
 import google.oauth2.credentials
 import googleapiclient.discovery
+from googleapiclient.discovery import build
 from functions import *
 
 
@@ -96,6 +97,15 @@ def oauth2callback():
     flow.fetch_token(authorization_response=request.url)
     credentials = flow.credentials
     session['credentials'] = credentials_to_dict(credentials)
+
+    # Create a service using credentials
+    people_service = build("people", "v1", credentials=credentials)
+
+    # Fetch the authenticated user's primary email
+    profile = people_service.people().get(resourceName="people/me", personFields="emailAddresses").execute()
+    email = profile.get("emailAddresses", [{}])[0].get("value", "")
+    session["user_email"] = email
+
     flash("Successfully authenticated with Google Calendar!")
     return redirect(url_for('dashboard'))
 
