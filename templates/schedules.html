@@ -1,71 +1,67 @@
 {% extends "base.html" %}
 {% block content %}
-<h1 class="mb-4 text-center">Optimal Schedules</h1>
+<h1 class="mb-5 text-center">Optimal Schedules</h1>
 
-<div class="row">
-  {% for schedule_key, schedule_title in [("ortools", "Schedule 1 (Optimal)"), ("smart1", "Schedule 2 (Smart)"), ("smart2", "Schedule 3 (Smart)")] %}
-    <div class="col-md-4">
-      <div class="card mb-4 shadow-sm">
-        <div class="card-header text-center bg-primary text-white">
-          <h5 class="mb-0">{{ schedule_title }}</h5>
-        </div>
-        <div class="card-body p-2">
-          <div class="position-relative" style="height: 840px; border: 1px solid #ccc; background-color: #fff;">
-            {% for hr in range(SCHEDULE_START, SCHEDULE_END + 1) %}
-              {% set top = (hr - SCHEDULE_START) * 60 %}
-              <div style="position:absolute; top:{{ top }}px; left:-50px; width:45px; text-align:right; font-size:0.75rem;">{{ "%02d:00"|format(hr) }}</div>
-              <div style="position:absolute; top:{{ top }}px; left:0; right:0; height:1px; background:#eee;"></div>
-            {% endfor %}
+{% for schedule_key, schedule_title in [("ortools", "Schedule 1 (Optimal)"), ("smart1", "Schedule 2 (Smart)"), ("smart2", "Schedule 3 (Smart)")] %}
+  <div class="mb-5">
+    <div class="card shadow-sm">
+      <div class="card-header bg-primary text-white text-center">
+        <h5 class="mb-0">{{ schedule_title }}</h5>
+      </div>
+      <div class="card-body p-3">
 
-            {% for item in schedules[schedule_key] %}
-              {% set start_time = item.real_start if item.real_start else item.calculated_start if item.calculated_start else item.start %}
-              {% set end_time = item.real_end if item.real_end else item.calculated_end if item.calculated_end else item.end %}
-              {% set start_minutes = start_time.hour * 60 + start_time.minute %}
-              {% set end_minutes = end_time.hour * 60 + end_time.minute %}
-              {% set top = start_minutes - SCHEDULE_START * 60 %}
-              {% set height = end_minutes - start_minutes %}
-              <div class="position-absolute rounded text-white p-1" style="
-                  top: {{ top }}px;
-                  height: {{ height }}px;
-                  left: 0;
-                  right: 0;
-                  background-color: {% if item.real_start %}#0d6efd{% else %}#6c757d{% endif %};
-                  font-size: 0.8rem;
-                  border: 1px solid #dee2e6;">
-                <strong>{{ item.name }}</strong><br>
-                {{ start_time.strftime('%I:%M %p').lstrip('0') }} - {{ end_time.strftime('%I:%M %p').lstrip('0') }}
-              </div>
-            {% endfor %}
-          </div>
+        <!-- Group items by date -->
+        {% set by_day = {} %}
+        {% for item in schedules[schedule_key] %}
+          {% set st = item.real_start if item.real_start else item.calculated_start if item.calculated_start else item.start %}
+          {% set date_key = st.date().isoformat() %}
+          {% if date_key not in by_day %}
+            {% set _ = by_day.update({date_key: []}) %}
+          {% endif %}
+          {% set _ = by_day[date_key].append(item) %}
+        {% endfor %}
 
-          <!-- Event List -->
-          <div class="mt-3">
-            <h6 class="text-center">Scheduled Items</h6>
-            <ul class="list-group small">
-              {% for item in schedules[schedule_key] %}
-                {% set display_start = item.real_start if item.real_start else item.calculated_start if item.calculated_start else item.start %}
-                {% set display_end = item.real_end if item.real_end else item.calculated_end if item.calculated_end else item.end %}
-                <li class="list-group-item">
-                  <strong>{{ item.name }}</strong><br>
-                  {{ display_start.strftime('%I:%M %p') }} – {{ display_end.strftime('%I:%M %p') }}<br>
-                  Category: {{ item.category }}<br>
-                  Priority: {{ item.priority if item.priority is defined else "—" }}
-                </li>
+        <!-- Loop over each day -->
+        {% for day_key in by_day|sort %}
+          <div class="mb-4">
+            <h6 class="text-center mb-2">{{ day_key }}</h6>
+            <div class="schedule-column mx-auto position-relative">
+
+              <!-- Time Labels -->
+              {% for hr in range(SCHEDULE_START, SCHEDULE_END + 1) %}
+                {% set top = (hr - SCHEDULE_START) * 60 %}
+                <div class="time-label" style="top:{{ top }}px;">{{ "%02d:00"|format(hr) }}</div>
+                <div class="schedule-time-line" style="top:{{ top }}px;"></div>
               {% endfor %}
-            </ul>
-          </div>
 
-          <!-- Commit Button -->
-          <form method="post" action="{{ url_for('commit_schedule', which=schedule_key) }}">
-            <button class="btn btn-success w-100 mt-3">Use This Schedule</button>
-          </form>
-        </div>
+              <!-- Events/Tasks -->
+              {% for item in by_day[day_key] %}
+                {% set st = item.real_start if item.real_start else item.calculated_start if item.calculated_start else item.start %}
+                {% set et = item.real_end if item.real_end else item.calculated_end if item.calculated_end else item.end %}
+                {% set start_min = st.hour * 60 + st.minute %}
+                {% set end_min = et.hour * 60 + et.minute %}
+                {% set top = start_min - (SCHEDULE_START * 60) %}
+                {% set height = end_min - start_min %}
+                {% set css_class = "task" if item.real_start else "event" %}
+                <div class="schedule-event {{ css_class }}" style="top: {{ top }}px; height: {{ height }}px;">
+                  <strong>{{ item.name }}</strong><br>
+                  {{ st.strftime('%I:%M %p').lstrip('0') }} - {{ et.strftime('%I:%M %p').lstrip('0') }}
+                </div>
+              {% endfor %}
+
+            </div>
+          </div>
+        {% endfor %}
+
+        <!-- Commit button -->
+        <form method="post" action="{{ url_for('commit_schedule', which=schedule_key) }}">
+          <button class="btn btn-success w-100 mt-3">Use This Schedule</button>
+        </form>
       </div>
     </div>
-  {% endfor %}
-</div>
+  </div>
+{% endfor %}
 
-<!-- Unscheduled Tasks -->
 {% if schedules.unscheduled %}
   <div class="mt-5">
     <h3 class="text-danger text-center">Unscheduled Tasks</h3>
@@ -82,8 +78,7 @@
   </div>
 {% endif %}
 
-<!-- Back Button -->
-<div class="text-center mt-5">
+<div class="text-center mt-4">
   <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
 </div>
 {% endblock %}

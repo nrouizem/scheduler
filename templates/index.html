@@ -1,12 +1,40 @@
-<!doctype html>
-<html>
-  <head>
-    <title>Scheduler - Welcome</title>
-  </head>
-  <body>
-    <h1>Welcome to Your Scheduler</h1>
-    <p>hey Matt :)</p>
-    <p>To begin, please connect your Google Calendar.</p>
-    <a href="{{ url_for('authorize') }}">Connect with Google Calendar</a>
-  </body>
-</html>
+{% extends "base.html" %}
+{% block content %}
+<div class="text-center mb-5">
+  <h1 class="display-5 fw-semibold">Welcome to Your Scheduler</h1>
+  <p class="lead text-muted">hey Matt :)</p>
+</div>
+
+<div class="row justify-content-center">
+  <div class="col-md-4 mb-4">
+    <div class="card text-center shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">Add a Task</h5>
+        <p class="card-text">Create flexible, intelligent tasks to schedule around your day.</p>
+        <a href="{{ url_for('add_task') }}" class="btn btn-outline-primary">Add Task</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4 mb-4">
+    <div class="card text-center shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">Add an Event</h5>
+        <p class="card-text">Fixed-time events like appointments, classes, or meetings.</p>
+        <a href="{{ url_for('add_event') }}" class="btn btn-outline-primary">Add Event</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4 mb-4">
+    <div class="card text-center shadow-sm">
+      <div class="card-body">
+        <h5 class="card-title">Generate Schedules</h5>
+        <p class="card-text">Process your calendar and tasks to view the top schedule options.</p>
+        <a href="{{ url_for('process_schedule') }}" class="btn btn-success">View Schedules</a>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+{% endblock %}
