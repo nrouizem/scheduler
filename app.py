@@ -262,12 +262,12 @@ def process_schedule():
     for item in items_to_schedule:
         print(item)
 
-    greedy_attempt = greedy_schedule(copy.deepcopy(items_to_schedule), timeslots)
+    greedy_attempt = greedy_schedule(copy.deepcopy(items_to_schedule), all_timeslots)
     if greedy_attempt:
         print("Used greedy schedule as fallback")
         items_to_schedule = greedy_attempt[0]
 
-    random_results = random_schedule(copy.deepcopy(items_to_schedule), timeslots, num_schedules=2)
+    random_results = random_schedule(copy.deepcopy(items_to_schedule), all_timeslots, num_schedules=2)
 
     schedules = {
     "ortools": schedule(copy.deepcopy(items_to_schedule), all_timeslots)[0],
