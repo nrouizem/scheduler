@@ -395,7 +395,7 @@ def smarter_schedule(items, timeslots, num_schedules=2):
             -(datetime.datetime.now(ZoneInfo("America/Chicago")).date() -
               (getattr(x, "created_at", None) or datetime.datetime.now(ZoneInfo("America/Chicago"))).date()).days
         ))
-
+        unscheduled = []
         for item in tasks_only:
             slots_per_item = math.ceil(item.duration_with_buffer() / timeslots[0].duration())
             candidate_starts = list(range(len(timeslots) - slots_per_item + 1))
@@ -410,7 +410,7 @@ def smarter_schedule(items, timeslots, num_schedules=2):
                 start_slot = timeslots[i]
                 slot_day = start_slot.start.date()
                 total_minutes = day_minutes[slot_day] + item.duration()
-                if total_minutes > 360:
+                if total_minutes > MAX_MINUTES_PER_DAY:
                     continue
 
                 item_copy = copy.deepcopy(item)
@@ -426,6 +426,7 @@ def smarter_schedule(items, timeslots, num_schedules=2):
                 break
 
             if not placed:
+                unscheduled.append(item)
                 continue
 
         if not scheduled:
@@ -444,7 +445,7 @@ def smarter_schedule(items, timeslots, num_schedules=2):
         if len(schedules) >= num_schedules:
             break
 
-    return schedules
+    return schedules, unscheduled
 
 def schedule_with_ortools(items, timeslots):
     """

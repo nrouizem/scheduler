@@ -69,6 +69,21 @@
         <button class="btn btn-danger w-100 mt-4">Undo Last Schedule Push</button>
       </form>
     </div>
+    {% if schedules.unscheduled %}
+      <div class="mt-4">
+        <h3 class="text-danger text-center">Unscheduled Tasks</h3>
+        <ul class="list-group">
+          {% for task in schedules.unscheduled %}
+            <li class="list-group-item">
+              <strong>{{ task.name }}</strong><br>
+              Duration: {{ task.estimated_duration }} minutes<br>
+              Priority: {{ task.priority }}<br>
+              Flexibility: {{ task.flexibility }}
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
     <div class="text-center mt-4">
       <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
     </div>

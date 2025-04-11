@@ -296,12 +296,13 @@ def process_schedule():
         print("Used greedy schedule as fallback")
         items_to_schedule = greedy_attempt[0]
 
-    smart_results = smarter_schedule(copy.deepcopy(items_to_schedule), all_timeslots, num_schedules=2)
+    smart_results, smart_unscheduled = smarter_schedule(copy.deepcopy(items_to_schedule), all_timeslots, num_schedules=2)
 
     schedules = {
-    "ortools": schedule(copy.deepcopy(items_to_schedule), all_timeslots)[0],
-    "smart1": smart_results[0][0] if len(smart_results) > 0 else [],
-    "smart2": smart_results[1][0] if len(smart_results) > 1 else []
+        "ortools": schedule(copy.deepcopy(items_to_schedule), all_timeslots)[0],
+        "smart1": smart_results[0][0] if len(smart_results) > 0 else [],
+        "smart2": smart_results[1][0] if len(smart_results) > 1 else [],
+        "unscheduled": smart_unscheduled
     }
     
     session["last_schedule_ortools"] = [item.__dict__ for item in schedules["ortools"]]
