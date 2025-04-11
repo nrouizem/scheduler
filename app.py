@@ -407,5 +407,32 @@ def commit_schedule(which):
     flash("Schedule pushed to Google Calendar!")
     return redirect(url_for("dashboard"))
 
+@app.route("/undo_schedule", methods=["POST"])
+def undo_schedule():
+    if "credentials" not in session:
+        return redirect(url_for("index"))
+
+    credentials = google.oauth2.credentials.Credentials(**session['credentials'])
+    service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials)
+
+    now = datetime.datetime.now(ZoneInfo("America/Chicago"))
+    time_min = now.isoformat()
+    time_max = (now + datetime.timedelta(days=3)).isoformat()
+
+    # Find all events your app created
+    events_result = service.events().list(
+        calendarId='primary',
+        timeMin=time_min,
+        timeMax=time_max,
+        singleEvents=True
+    ).execute()
+
+    for event in events_result.get("items", []):
+        if event.get("description", "").startswith("generated-by:smart-scheduler"):
+            service.events().delete(calendarId='primary', eventId=event["id"]).execute()
+
+    flash("Schedule removed from Google Calendar.")
+    return redirect(url_for("dashboard"))
+
 if __name__ == "__main__":
     app.run(debug=True)
