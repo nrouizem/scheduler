@@ -280,7 +280,11 @@ def process_schedule():
     "ortools": schedule(copy.deepcopy(items_to_schedule), all_timeslots)[0],
     "random1": random_results[0][0] if len(random_results) > 0 else [],
     "random2": random_results[1][0] if len(random_results) > 1 else []
-}
+    }
+    
+    session["last_schedule_ortools"] = [item.__dict__ for item in schedules["ortools"]]
+    session["last_schedule_random1"] = [item.__dict__ for item in schedules["random1"]]
+    session["last_schedule_random2"] = [item.__dict__ for item in schedules["random2"]]
     
     # Render a new page to display the optimal schedule.
     return render_template("schedules.html", schedules=schedules)
@@ -362,6 +366,46 @@ def timeslot_quality_plot():
     fig.savefig(buf, format="png")
     buf.seek(0)
     return Response(buf.getvalue(), mimetype="image/png")
+
+@app.route("/commit_schedule/<string:which>", methods=["POST"])
+def commit_schedule(which):
+    if "credentials" not in session:
+        return redirect(url_for("index"))
+
+    credentials = google.oauth2.credentials.Credentials(**session['credentials'])
+    service = googleapiclient.discovery.build('calendar', 'v3', credentials=credentials)
+
+    # Determine schedule to push
+    schedule_map = {
+        "ortools": session.get("last_schedule_ortools", []),
+        "random1": session.get("last_schedule_random1", []),
+        "random2": session.get("last_schedule_random2", [])
+    }
+    selected_schedule = schedule_map.get(which, [])
+
+    # Delete previously generated events
+    now = datetime.datetime.now(ZoneInfo("America/Chicago"))
+    time_min = now.isoformat()
+    time_max = (now + datetime.timedelta(days=3)).isoformat()
+
+    events_result = service.events().list(calendarId='primary', timeMin=time_min, timeMax=time_max).execute()
+    existing = events_result.get("items", [])
+    for evt in existing:
+        if evt.get("description", "").startswith("generated-by:smart-scheduler"):
+            service.events().delete(calendarId='primary', eventId=evt["id"]).execute()
+
+    # Add new events
+    for item in selected_schedule:
+        event = {
+            'summary': item["name"],
+            'start': {'dateTime': item["calculated_start"], 'timeZone': 'America/Chicago'},
+            'end': {'dateTime': item["calculated_end"], 'timeZone': 'America/Chicago'},
+            'description': 'generated-by:smart-scheduler'
+        }
+        service.events().insert(calendarId='primary', body=event).execute()
+
+    flash("Schedule pushed to Google Calendar!")
+    return redirect(url_for("dashboard"))
 
 if __name__ == "__main__":
     app.run(debug=True)

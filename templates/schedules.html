@@ -43,6 +43,9 @@
               {% endif %}
               {% set _ = grouped[day].append(item) %}
             {% endfor %}
+            <form method="post" action="{{ url_for('commit_schedule', which=schedule) }}">
+              <button class="btn btn-primary my-3 w-100">Use This Schedule</button>
+            </form>
 
             {% for day, items in grouped.items() %}
               <div class="day-column">
