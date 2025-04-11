@@ -10,6 +10,7 @@ from ortools.sat.python import cp_model
 import os
 from dateutil.parser import isoparse
 import json
+import copy
 
 # Example focus level function based on time-of-day.
 def get_focus_level(time: datetime.datetime) -> float:
