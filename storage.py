@@ -11,7 +11,8 @@ def load_tasks() -> list[Task]:
         required_focus=t.required_focus,
         category=t.category,
         flexibility=t.flexibility,
-        priority=t.priority
+        priority=t.priority,
+        created_at=t.created_at
     ) for t in tasks]
 
 def save_task(new_task: Task):

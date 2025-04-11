@@ -1,6 +1,7 @@
-from sqlalchemy import create_engine, Column, Integer, String, Float
+from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from datetime import timezone, datetime
 import os
 
 Base = declarative_base()
@@ -14,6 +15,7 @@ class TaskDB(Base):
     category = Column(String, default="general")
     flexibility = Column(Float, default=0.5)
     priority = Column(Integer, default=3)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
@@ -21,4 +23,5 @@ engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(bind=engine)
 
 def init_db():
+    Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)

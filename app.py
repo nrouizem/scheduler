@@ -11,6 +11,7 @@ from models import init_db, SessionLocal, TaskDB
 from matplotlib.figure import Figure
 from flask import Response
 import io
+from collections import defaultdict
 init_db()
 
 
@@ -248,6 +249,7 @@ def process_schedule():
     slot_duration = 15  # minutes
 
     all_timeslots = []
+    timeslots_by_day = defaultdict(list)
 
     for offset in range(NUM_DAYS):
         day = today + datetime.timedelta(days=offset)
@@ -255,6 +257,8 @@ def process_schedule():
         day_end = day.replace(hour=DAY_END_HOUR, minute=0, second=0, microsecond=0)
         
         day_slots = generate_timeslots(day_start, day_end, slot_duration, get_focus_level, get_weather)
+        for slot in day_slots:
+            timeslots_by_day[slot.start.date()].append(slot)
         all_timeslots.extend(day_slots)
 
     task_objs = load_tasks()

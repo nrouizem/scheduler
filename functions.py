@@ -10,6 +10,9 @@ from ortools.sat.python import cp_model
 import os
 from dateutil.parser import isoparse
 import json
+from collections import defaultdict
+from config import MAX_MINUTES_PER_DAY
+from zoneinfo import ZoneInfo
 import copy
 
 # Example focus level function based on time-of-day.
@@ -81,6 +84,7 @@ class Task:
     priority: int = 3  # 1 (low) to 5 (high), default = 3
     buffer_before: int = 15 # travel/other time beforehand to take into account
     buffer_after: int = 15 # rest/other time after to take into account
+    created_at: datetime = None
 
     def duration(self):
         """Helper function to be consistent with Event class."""
@@ -193,18 +197,31 @@ def score(item, timeslot):
     ]
 
     base_score = np.dot(match_array, weights)
+    tz = ZoneInfo("America/Chicago")
 
     priority_boost = 0
     if isinstance(item, Task):
         priority_boost = (item.priority - 3) * 0.5  # -1.0 to +1.0 scaling
+        # Aging boost (max +1 after 5 days)
+        if item.created_at:
+            now = datetime.now(tz)
+            days_old = (now.date() - item.created_at.date()).days
+            aging_boost = min(1.0, days_old * 0.2)
+            base_score += aging_boost
     
     if isinstance(item, Task) and item.flexibility > 0.5:
         # this task is very flexible, so deprioritize it slightly
         base_score *= (1 - 0.2 * item.flexibility)
     
+    today = datetime.datetime.now(tz).date()
+
     if isinstance(item, Task) and item.flexibility < 0.5:
-        if timeslot.start.date() == datetime.date.today():
+        if timeslot.start.date() == today:
             base_score += 1.0  # boost for today if task is inflexible
+    
+    days_ahead = (timeslot.start.date() - today).days
+    penalty = 0.1 * days_ahead
+    base_score -= penalty
 
     return base_score + priority_boost
 
@@ -215,6 +232,7 @@ def greedy_schedule(items, timeslots):
     timeslots_used = set()
     schedule = []
     t_score = 0
+    used_minutes_by_day = defaultdict(int)
 
     for item in items:
         best_start = None
@@ -223,6 +241,11 @@ def greedy_schedule(items, timeslots):
 
         for i in range(len(timeslots) - timeslots_required + 1):
             slot_indices = range(i, i + timeslots_required)
+
+            day = timeslots[i].start.date()
+            minutes_scheduled = used_minutes_by_day[day]
+            if minutes_scheduled + item.duration() > MAX_MINUTES_PER_DAY:
+                continue  # too full
 
             # Skip if overlap
             if any(idx in timeslots_used for idx in slot_indices):
@@ -258,7 +281,7 @@ def random_schedule(items, timeslots, num_schedules=2):
 
     seen_hashes = set()
     attempts = 0
-    max_attempts = 20000  # total tries across all N
+    max_attempts = 10000  # total tries across all N
 
     while len(valid_schedules) < num_schedules and attempts < max_attempts:
         attempts += 1
