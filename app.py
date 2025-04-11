@@ -10,6 +10,7 @@ from functions import Task
 from models import init_db, SessionLocal, TaskDB
 from matplotlib.figure import Figure
 from flask import Response
+import io
 init_db()
 
 
