@@ -359,6 +359,35 @@ def timeslot_quality_plot():
     buf.seek(0)
     return Response(buf.getvalue(), mimetype="image/png")
 
+@app.route("/heatmap")
+def heatmap():
+    tz = ZoneInfo("America/Chicago")
+    now = datetime.datetime.now(tz)
+    NUM_DAYS = 3
+
+    all_slots = []
+    labels = []
+    times_by_day = {}
+
+    for day_offset in range(NUM_DAYS):
+        current_day = now + datetime.timedelta(days=day_offset)
+        day_start = current_day.replace(hour=DAY_START_HOUR, minute=0, second=0, microsecond=0)
+        day_end = current_day.replace(hour=DAY_END_HOUR, minute=0, second=0, microsecond=0)
+        timeslots = generate_timeslots(day_start, day_end, 30, get_focus_level, get_weather)
+
+        scores = []
+        for slot in timeslots:
+            focus = slot.focus_level
+            weather = score_weather(
+                Task(name="", estimated_duration=30, required_focus=0.5, category="gardening", flexibility=0.5),
+                slot
+            )
+            composite = (focus + weather) / 2
+            scores.append((slot.start, composite))
+
+        times_by_day[current_day.date()] = scores
+
+    return render_template("heatmap.html", times_by_day=times_by_day)
 
 
 if __name__ == "__main__":
