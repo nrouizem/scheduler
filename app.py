@@ -50,7 +50,11 @@ def make_session_permanent():
 CLIENT_SECRETS_FILE = "credentials.json"
 
 # This scope allows read/write access to the authenticated user's calendar.
-SCOPES = ['https://www.googleapis.com/auth/calendar']
+SCOPES = [
+    "https://www.googleapis.com/auth/calendar",
+    "https://www.googleapis.com/auth/userinfo.email",
+    "openid"
+]
 
 def credentials_to_dict(credentials):
     """Converts credentials to a serializable dictionary."""
@@ -108,6 +112,11 @@ def oauth2callback():
 
     flash("Successfully authenticated with Google Calendar!")
     return redirect(url_for('dashboard'))
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("index"))
 
 @app.route("/dashboard")
 def dashboard():

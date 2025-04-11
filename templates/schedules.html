@@ -50,8 +50,8 @@
               {% set end_min = et.hour * 60 + et.minute %}
               {% set top = start_min - (SCHEDULE_START * 60) %}
               {% set height = end_min - start_min %}
-              {% set is_task = item.real_start or item.calculated_start %}
-              {% set css_class = "task" if is_task else "event" %}
+              {% set is_event = item.start %}
+              {% set css_class = "event" if is_event else "task" %}
               {% set show_time = height >= 30 %}
               <div class="schedule-event {{ css_class }}"
                   title="{{ item.name }} ({{ st.strftime('%I:%M %p') }} - {{ et.strftime('%I:%M %p') }})"
