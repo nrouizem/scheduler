@@ -143,9 +143,6 @@ def dashboard():
     ).execute()
     not_today_events = not_today_events_result.get('items', [])
 
-    # Retrieve tasks
-    tasks = load_tasks()
-
     # Update the session credentials (in case they were refreshed).
     session['credentials'] = credentials_to_dict(credentials)
     return render_template("dashboard.html", events=events, today_events=today_events, not_today_events=not_today_events, tasks=tasks)

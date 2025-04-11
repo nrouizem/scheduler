@@ -78,6 +78,7 @@ class Task:
     required_focus: float  # e.g., 0.0 (low) to 1.0 (high)
     category: str  # e.g., 'gardening', 'writing'
     flexibility: float # e.g., 0.0 (none/fixed) to 1.0 (very flexible) but what does flexibility mean for a task?? "does it have to happen today" maybe?
+    priority: int = 3  # 1 (low) to 5 (high), default = 3
     buffer_before: int = 15 # travel/other time beforehand to take into account
     buffer_after: int = 15 # rest/other time after to take into account
 

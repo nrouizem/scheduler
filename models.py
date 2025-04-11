@@ -13,6 +13,7 @@ class TaskDB(Base):
     required_focus = Column(Float, default=0.5)
     category = Column(String, default="general")
     flexibility = Column(Float, default=0.5)
+    priority = Column(Integer, default=3)
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
