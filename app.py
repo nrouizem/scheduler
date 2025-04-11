@@ -204,7 +204,8 @@ def add_task():
             required_focus=float(request.form.get("required_focus", 0.5)),
             category=request.form.get("category", "general"),
             flexibility=float(request.form.get("flexibility", 0.5)),
-            priority=int(request.form.get("priority", 3))
+            priority=int(request.form.get("priority", 3)),
+            recurrence=request.form.get("recurrence", "none")
         )
         save_task(task)
         flash("Task added!")
@@ -261,7 +262,29 @@ def process_schedule():
             timeslots_by_day[slot.start.date()].append(slot)
         all_timeslots.extend(day_slots)
 
-    task_objs = load_tasks()
+    # add recurring tasks
+    dates_in_range = [today + datetime.timedelta(days=i) for i in range(NUM_DAYS)]
+
+    all_tasks = load_tasks()
+    scheduled_tasks = []
+
+    for task in all_tasks:
+        if task.recurrence == "none":
+            scheduled_tasks.append(task)
+        elif task.recurrence == "daily":
+            for day in dates_in_range:
+                new_task = copy.deepcopy(task)
+                new_task.name += f" ({day.strftime('%a')})"
+                scheduled_tasks.append(new_task)
+        elif task.recurrence.startswith("weekly:"):
+            weekday = int(task.recurrence.split(":")[1])
+            for day in dates_in_range:
+                if day.weekday() == weekday:
+                    new_task = copy.deepcopy(task)
+                    new_task.name += f" ({day.strftime('%a')})"
+                    scheduled_tasks.append(new_task)
+
+    task_objs = scheduled_tasks
 
     # Merge calendar events + tasks
     items_to_schedule = internal_events + task_objs

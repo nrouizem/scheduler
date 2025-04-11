@@ -22,8 +22,20 @@
         <input type="number" id="flexibility" name="flexibility" step="0.1" min="0" max="1"><br><br>
 
         <label for="priority">Priority (1 = Low, 5 = High):</label>
-        <input type="number" id="priority" name="priority" min="1" max="5" value="3">
-        <br><br>
+        <input type="number" id="priority" name="priority" min="1" max="5" value="3"><br><br>
+
+        <label for="recurrence">Recurrence:</label>
+        <select id="recurrence" name="recurrence">
+        <option value="none">None</option>
+        <option value="daily">Daily</option>
+        <option value="weekly:0">Weekly on Monday</option>
+        <option value="weekly:1">Weekly on Tuesday</option>
+        <option value="weekly:2">Weekly on Wednesday</option>
+        <option value="weekly:3">Weekly on Thursday</option>
+        <option value="weekly:4">Weekly on Friday</option>
+        <option value="weekly:5">Weekly on Saturday</option>
+        <option value="weekly:6">Weekly on Sunday</option>
+        </select><br><br>
       
         <input type="submit" value="Add Task">
       </form>

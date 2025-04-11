@@ -85,6 +85,7 @@ class Task:
     buffer_before: int = 15 # travel/other time beforehand to take into account
     buffer_after: int = 15 # rest/other time after to take into account
     created_at: datetime = None
+    recurrence: str = "none"
 
     def duration(self):
         """Helper function to be consistent with Event class."""

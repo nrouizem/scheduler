@@ -16,6 +16,7 @@ class TaskDB(Base):
     flexibility = Column(Float, default=0.5)
     priority = Column(Integer, default=3)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    recurrence = Column(String, default="none")
 
 DATABASE_URL = os.environ.get("DATABASE_URL")
 
@@ -23,4 +24,5 @@ engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(bind=engine)
 
 def init_db():
+    Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
