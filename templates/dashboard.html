@@ -1,50 +1,44 @@
-<!doctype html>
-<html>
-  <head>
-    <title>Your Calendar Dashboard</title>
-  </head>
-  <body>
-    <h1>Dashboard</h1>
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <ul>
-          {% for message in messages %}
-            <li>{{ message }}</li>
-          {% endfor %}
-        </ul>
-      {% endif %}
-    {% endwith %}
-    <h2>Today's Schedule:</h2>
-    <ul>
-      {% for event in today_events %}
-        <li>{{ event.summary }} - {{ (event.start.dateTime or event.start.date) | datetimeformat }}
-        </li>
-      {% endfor %}
-    </ul>
-    <h2>Looking Ahead:</h2>
-    <ul>
-      {% for event in not_today_events %}
-        <li>{{ event.summary }} - {{ (event.start.dateTime or event.start.date) | datetimeformat }}
-        </li>
-      {% endfor %}
-    </ul>
-    <h2>Tasks:</h2>
-    <ul>
-      {% for task in tasks %}
-        <li>
-          <strong>{{ task.name }}</strong> – {{ task.estimated_duration }} mins, Flex: {{ task.flexibility }}, Priority: {{ task.priority }}
-          <a href="{{ url_for('delete_task', task_id=task.id) }}" onclick="return confirm('Delete this task?');">[Delete]</a>
-        </li>
-      {% endfor %}
-    </ul>
-    <a href="{{ url_for('add_task') }}">Add a New Task</a>
-    <br>
-    <a href="{{ url_for('add_event') }}">Add a New Event</a>
-    <br>
-    <a href="{{ url_for('process_schedule') }}">Process Today’s Schedule</a>
-    <br>
-    <a href="{{ url_for('index') }}">Change Account</a>
-    <h3>Focus & Weather Profile</h3>
-    <img src="{{ url_for('timeslot_quality_plot') }}" class="img-fluid">
-  </body>
-</html>
+{% extends "base.html" %}
+{% block content %}
+<h1 class="mb-4 text-center">Your Dashboard</h1>
+
+<div class="row">
+  <div class="col-md-4 mb-4">
+    <div class="card shadow-sm">
+      <div class="card-body text-center">
+        <h5 class="card-title">Add Task</h5>
+        <p class="card-text">Create a new flexible task for today or future days.</p>
+        <a href="{{ url_for('add_task') }}" class="btn btn-outline-primary">Add Task</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4 mb-4">
+    <div class="card shadow-sm">
+      <div class="card-body text-center">
+        <h5 class="card-title">Add Event</h5>
+        <p class="card-text">Add a fixed-time event to your personal schedule.</p>
+        <a href="{{ url_for('add_event') }}" class="btn btn-outline-primary">Add Event</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4 mb-4">
+    <div class="card shadow-sm">
+      <div class="card-body text-center">
+        <h5 class="card-title">Generate Schedules</h5>
+        <p class="card-text">See optimal schedules based on your tasks and calendar.</p>
+        <a href="{{ url_for('process_schedule') }}" class="btn btn-success">View Schedules</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mt-4">
+  <div class="col">
+    <div class="alert alert-info text-center">
+      Need to adjust something? Head to <strong>Add Task</strong> or <strong>Add Event</strong> to make updates before reprocessing your schedule.
+    </div>
+  </div>
+</div>
+{% endblock %}
