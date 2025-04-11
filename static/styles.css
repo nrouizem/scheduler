@@ -134,4 +134,29 @@ body {
     border-radius: 0.25rem;
     position: relative;
   }
+
+  .schedule-event {
+    position: absolute;
+    left: 2%;
+    width: 96%;
+    border-radius: 0.25rem;
+    padding: 4px 6px;
+    font-size: 0.75rem;
+    color: #fff;
+    border: 1px solid #ced4da;
+    line-height: 1.2;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    transition: all 0.2s ease-in-out;
+    cursor: default;
+  }
+  
+  .schedule-event:hover {
+    white-space: normal;
+    overflow: visible;
+    z-index: 10;
+    background-color: rgba(33, 37, 41, 0.95);
+  }
   
