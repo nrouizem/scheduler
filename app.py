@@ -5,6 +5,7 @@ import copy
 from zoneinfo import ZoneInfo
 from dateutil.parser import isoparse
 from config import DAY_START_HOUR, DAY_END_HOUR
+from storage import save_task, load_tasks
 from functions import Task
 
 def write_credentials_file():
@@ -135,9 +136,12 @@ def dashboard():
     ).execute()
     not_today_events = not_today_events_result.get('items', [])
 
+    # Retrieve tasks
+    tasks = load_tasks()
+
     # Update the session credentials (in case they were refreshed).
     session['credentials'] = credentials_to_dict(credentials)
-    return render_template("dashboard.html", events=events, today_events=today_events, not_today_events=not_today_events)
+    return render_template("dashboard.html", events=events, today_events=today_events, not_today_events=not_today_events, tasks=tasks)
 
 @app.route("/add_event", methods=["GET", "POST"])
 def add_event():
@@ -185,21 +189,18 @@ def add_event():
 
 @app.route("/add_task", methods=["GET", "POST"])
 def add_task():
-    if "tasks" not in session:
-        session["tasks"] = []
-
     if request.method == "POST":
-        task = {
-            "name": request.form["name"],
-            "estimated_duration": int(request.form["duration"]),
-            "required_focus": float(request.form.get("required_focus", 0.5)),
-            "category": request.form.get("category", "general"),
-            "flexibility": float(request.form.get("flexibility", 0.5)),
-        }
-        session["tasks"].append(task)
+        task = Task(
+            name=request.form["name"],
+            estimated_duration=int(request.form["duration"]),
+            required_focus=float(request.form.get("required_focus", 0.5)),
+            category=request.form.get("category", "general"),
+            flexibility=float(request.form.get("flexibility", 0.5)),
+        )
+        save_task(task)
         flash("Task added!")
         return redirect(url_for("dashboard"))
-
+    
     return render_template("add_task.html")
 
 @app.route("/process_schedule")
@@ -239,8 +240,7 @@ def process_schedule():
     slot_duration = 15  # minutes
     timeslots = generate_timeslots(day_start, day_end, slot_duration, get_focus_level, get_weather)
 
-    task_dicts = session.get("tasks", [])
-    task_objs = [Task(**task_dict) for task_dict in task_dicts]
+    task_objs = load_tasks()
 
     # Merge calendar events + tasks
     items_to_schedule = internal_events + task_objs
