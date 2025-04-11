@@ -64,6 +64,8 @@ def credentials_to_dict(credentials):
 
 @app.route("/")
 def index():
+    if "credentials" in session:
+        return redirect(url_for("dashboard"))
     return render_template("index.html")
 
 @app.route("/authorize")
