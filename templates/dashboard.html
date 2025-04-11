@@ -33,6 +33,7 @@
       {% for task in tasks %}
         <li>
           <strong>{{ task.name }}</strong> – {{ task.estimated_duration }} mins, Flex: {{ task.flexibility }}
+          <a href="{{ url_for('delete_task', task_id=task.id) }}" onclick="return confirm('Delete this task?');">[Delete]</a>
         </li>
       {% endfor %}
     </ul>

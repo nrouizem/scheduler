@@ -7,7 +7,7 @@ from dateutil.parser import isoparse
 from config import DAY_START_HOUR, DAY_END_HOUR
 from storage import save_task, load_tasks
 from functions import Task
-from models import init_db
+from models import init_db, SessionLocal, TaskDB
 init_db()
 
 
@@ -98,6 +98,10 @@ def oauth2callback():
 def dashboard():
     if 'credentials' not in session:
         return redirect(url_for('index'))
+    
+    db = SessionLocal()
+    tasks = db.query(TaskDB).all()
+    db.close()
     
     # all events
     # Use stored credentials to build the Google Calendar service.
@@ -301,6 +305,20 @@ def inject_schedule_bounds():
         SCHEDULE_START=DAY_START_HOUR,
         SCHEDULE_END=DAY_END_HOUR
     )
+
+@app.route("/delete_task/<int:task_id>")
+def delete_task(task_id):
+    db = SessionLocal()
+    task = db.query(TaskDB).filter(TaskDB.id == task_id).first()
+    if task:
+        db.delete(task)
+        db.commit()
+        flash(f"Deleted task: {task.name}")
+    else:
+        flash("Task not found.")
+    db.close()
+    return redirect(url_for("dashboard"))
+
 
 if __name__ == "__main__":
     app.run(debug=True)
