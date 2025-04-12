@@ -221,7 +221,7 @@ def add_task():
     if request.method == "POST":
         task = Task(
             name=request.form["name"],
-            estimated_duration=int(request.form["duration"]),
+            estimated_duration=int(request.form["estimated_duration"]),
             required_focus=float(request.form.get("required_focus", 0.5)),
             category=request.form.get("category", "general"),
             flexibility=float(request.form.get("flexibility", 0.5)),
