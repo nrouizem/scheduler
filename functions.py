@@ -306,56 +306,9 @@ def greedy_schedule(items, timeslots):
     schedule.sort(key=lambda task: task.calculated_start)
     return schedule, t_score
 
-# randomly assign timeslots (really dumb)
-def random_schedule(items, timeslots, num_schedules=2):
-    return None
-    print("Processed with random schedule generator")
-    valid_schedules = []
-
-    seen_hashes = set()
-    attempts = 0
-    max_attempts = 10000  # total tries across all N
-
-    while len(valid_schedules) < num_schedules and attempts < max_attempts:
-        attempts += 1
-        this_score = 0
-        schedule = []
-        flag = 0
-        timeslots_used_idx = []
-        random.shuffle(items)
-
-        for item in items:
-            i = random.randint(0, len(timeslots) - 1)
-            timeslots_required = math.ceil(item.duration_with_buffer() / timeslots[0].duration())
-            if i + timeslots_required > len(timeslots):
-                flag = 1
-                break
-            new_timeslots = [j for j in range(i, i + timeslots_required)]
-            if any(j in timeslots_used_idx for j in new_timeslots):
-                flag = 1
-                break
-
-            timeslots_used_idx.extend(new_timeslots)
-            this_score += score(item, timeslots[i])
-            item.calculated_start = timeslots[i].start + datetime.timedelta(minutes=item.buffer_before)
-            item.calculated_end = item.calculated_start + datetime.timedelta(minutes=item.duration())
-            schedule.append(copy.deepcopy(item))
-
-        if flag:
-            continue
-
-        # Hash schedule by start times to detect duplicates
-        sched_hash = tuple(sorted(item.calculated_start for item in schedule))
-        if sched_hash in seen_hashes:
-            continue
-
-        seen_hashes.add(sched_hash)
-        schedule.sort(key=lambda task: task.calculated_start)
-        valid_schedules.append((schedule, this_score))
-
-    return valid_schedules
-
 def smarter_schedule(items, timeslots, num_schedules=2):
+    import time
+    start = time.time()
     schedules = []
     seen_hashes = set()
     MAX_ATTEMPTS = 200
@@ -447,7 +400,7 @@ def smarter_schedule(items, timeslots, num_schedules=2):
         schedules.append((scheduled, total_score))
         if len(schedules) >= num_schedules:
             break
-
+    print("Smart schedule generation time:", time.time() - start)
     return schedules, unscheduled
 
 def schedule_with_ortools(items, timeslots):
@@ -462,6 +415,8 @@ def schedule_with_ortools(items, timeslots):
       best_schedule: dictionary mapping item names to the scheduled start time (as string)
       best_score: the objective value.
     """
+    import time
+    start = time.time()
     print("Processed with or_tools")
     model = cp_model.CpModel()
     n_items = len(items)
@@ -529,6 +484,7 @@ def schedule_with_ortools(items, timeslots):
             item.calculated_end = item.calculated_start + datetime.timedelta(minutes=item.duration())
             best_schedule.append(item)
         best_schedule.sort(key=lambda task: task.calculated_start)
+        print("OR-tools schedule generation time:", time.time() - start)
         return best_schedule, best_score/100_000
     else:
         return None, None
@@ -538,7 +494,7 @@ def schedule(items, timeslots):
     if or_tools_schedule[0]:
         return or_tools_schedule
     
-    return random_schedule(items, timeslots)
+    return smarter_schedule(items, timeslots, num_schedules=1)[0]
 
 def convert_gcal_event(gcal_event: dict) -> Event:
     # Extract event name (use a default if not provided)
