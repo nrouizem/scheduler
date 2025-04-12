@@ -308,7 +308,7 @@ def greedy_schedule(items, timeslots):
 
 def smarter_schedule(items, timeslots, num_schedules=2):
     import time
-    start = time.time()
+    start_time = time.time()
     schedules = []
     seen_hashes = set()
     MAX_ATTEMPTS = 200
@@ -400,7 +400,7 @@ def smarter_schedule(items, timeslots, num_schedules=2):
         schedules.append((scheduled, total_score))
         if len(schedules) >= num_schedules:
             break
-    print("Smart schedule generation time:", time.time() - start)
+    print("Smart schedule generation time:", time.time() - start_time)
     return schedules, unscheduled
 
 def schedule_with_ortools(items, timeslots):
@@ -473,6 +473,7 @@ def schedule_with_ortools(items, timeslots):
     
     # Solve the model.
     solver = cp_model.CpSolver()
+    solver.parameters.max_time_in_seconds = 1.0
     status = solver.Solve(model)
     
     if status in [cp_model.OPTIMAL, cp_model.FEASIBLE]:
